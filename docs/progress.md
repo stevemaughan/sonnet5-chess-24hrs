@@ -258,3 +258,22 @@ to be a search bottleneck later.
   the fact roughly 3.5 hours have produced the large majority of the
   strength gain so far and returns may start diminishing — will reassess
   each hour rather than assume.
+
+## Hour 4 continued — 2026-08-26 19:20
+
+- stash-25 (~2940 CCRL) bracket: 200 games, **13.0% score, 200/200 normal
+  terminations** (reliability record stays perfect). Estimate from this
+  match alone: ~2610. Combined with stash-20 (~2610) and stash-21 (~2682)
+  estimates, the three brackets converge on **roughly 2600-2650** as the
+  current best estimate (CCRL ratings are for a different time control than
+  our 10+0.1, so treat this as directionally right rather than precise).
+  No further Elo gain confirmed yet from the last (passed pawn/countermove)
+  change specifically against Stash, but the internal A/B result was solid.
+- Next: continue with well-established, cheaply-verified improvements —
+  candidates: safe mobility (exclude squares attacked by enemy pawns from
+  the mobility count, standard refinement), an "easy move" time-saving
+  heuristic (commit early when one move is far ahead and stable, to bank
+  time for harder positions later in the game). Will keep validating each
+  change with an internal A/B match plus periodic Stash re-anchoring, and
+  keep the "no foreground work during background matches" + self-play
+  stress-test discipline.
