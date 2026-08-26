@@ -6,9 +6,14 @@
 #include <cstdint>
 
 struct SearchLimits {
-    int64_t wtime = -1, btime = -1, winc = 0, binc = 0;
+    // NOT_SET means the GUI didn't send this field at all. A GUI can legitimately
+    // send a zero or negative wtime/btime/movetime (clock essentially expired) —
+    // that must NOT be confused with "no time control given" (which means search
+    // unbounded, governed only by depth/infinite/stop). Keep these distinct.
+    static constexpr int64_t NOT_SET = INT64_MIN;
+    int64_t wtime = NOT_SET, btime = NOT_SET, winc = 0, binc = 0;
     int movestogo = 0;
-    int64_t movetime = -1;
+    int64_t movetime = NOT_SET;
     int depth = -1;
     bool infinite = false;
 };

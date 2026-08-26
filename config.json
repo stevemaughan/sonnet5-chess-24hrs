@@ -32,7 +32,7 @@
         "additional_lines_rgx": [],
         "event_name": "Fastchess Tournament",
         "site": "?",
-        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/new2_vs_new1_pruning.pgn",
+        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/new3_vs_new2_kingsafety.pgn",
         "notation": 0,
         "append_file": true,
         "track_nodes": false,
@@ -60,7 +60,7 @@
     },
     "config_name": "config.json",
     "output": 0,
-    "seed": 15645204456549300664,
+    "seed": 9512307711139909573,
     "variant": 0,
     "type": 0,
     "gauntlet_seeds": 1,
@@ -89,6 +89,31 @@
     },
     "engines": [
         {
+            "name": "new3",
+            "dir": "",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/new3.exe",
+            "args": "",
+            "restart": false,
+            "options": [
+                [
+                    "Hash",
+                    "256"
+                ]
+            ],
+            "limit": {
+                "tc": {
+                    "increment": 100,
+                    "fixed_time": 0,
+                    "time": 10000,
+                    "moves": 0,
+                    "timemargin": 0
+                },
+                "nodes": 0,
+                "plies": 0
+            },
+            "variant": 0
+        },
+        {
             "name": "new2",
             "dir": "",
             "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/new2.exe",
@@ -112,44 +137,19 @@
                 "plies": 0
             },
             "variant": 0
-        },
-        {
-            "name": "new1",
-            "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/new.exe",
-            "args": "",
-            "restart": false,
-            "options": [
-                [
-                    "Hash",
-                    "256"
-                ]
-            ],
-            "limit": {
-                "tc": {
-                    "increment": 100,
-                    "fixed_time": 0,
-                    "time": 10000,
-                    "moves": 0,
-                    "timemargin": 0
-                },
-                "nodes": 0,
-                "plies": 0
-            },
-            "variant": 0
         }
     ],
     "stats": {
-        "new2 vs new1": {
-            "wins": 59,
-            "losses": 12,
-            "draws": 67,
-            "penta_WW": 8,
-            "penta_WD": 36,
-            "penta_WL": 7,
-            "penta_DD": 13,
-            "penta_LD": 5,
-            "penta_LL": 0
+        "new3 vs new2": {
+            "wins": 41,
+            "losses": 49,
+            "draws": 70,
+            "penta_WW": 5,
+            "penta_WD": 14,
+            "penta_WL": 17,
+            "penta_DD": 16,
+            "penta_LD": 24,
+            "penta_LL": 4
         }
     }
 }

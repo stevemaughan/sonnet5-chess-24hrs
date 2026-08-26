@@ -45,19 +45,27 @@ static bool isRepetition(const Board& b) {
 }
 
 static void computeTimeBudget(const SearchLimits& limits, Color us) {
-    if (limits.infinite || (limits.depth > 0 && limits.movetime < 0 && limits.wtime < 0 && limits.btime < 0)) {
+    bool bothClocksUnset = limits.wtime == SearchLimits::NOT_SET && limits.btime == SearchLimits::NOT_SET;
+    if (limits.infinite || (limits.depth > 0 && limits.movetime == SearchLimits::NOT_SET && bothClocksUnset)) {
         limited = false; softMs = hardMs = -1; return;
     }
-    if (limits.movetime >= 0) {
+    if (limits.movetime != SearchLimits::NOT_SET) {
+        // A GUI can legitimately send a tiny or non-positive movetime; clamp
+        // rather than treat it as "no limit".
+        int64_t mt = std::max<int64_t>(1, limits.movetime);
         limited = true;
-        hardMs = std::max<int64_t>(1, limits.movetime - 15 - moveOverheadMs);
-        softMs = std::max<int64_t>(1, limits.movetime - 30 - moveOverheadMs);
+        hardMs = std::max<int64_t>(1, mt - 15 - moveOverheadMs);
+        softMs = std::max<int64_t>(1, mt - 30 - moveOverheadMs);
         return;
     }
-    int64_t myTime = (us == WHITE) ? limits.wtime : limits.btime;
+    int64_t myTimeRaw = (us == WHITE) ? limits.wtime : limits.btime;
+    if (myTimeRaw == SearchLimits::NOT_SET) { limited = false; softMs = hardMs = -1; return; }
+
     int64_t myInc = (us == WHITE) ? limits.winc : limits.binc;
     if (myInc < 0) myInc = 0;
-    if (myTime < 0) { limited = false; softMs = hardMs = -1; return; }
+    // A clock at or past zero is still a real, bounded situation — clamp to a
+    // minimal positive value instead of (incorrectly) treating it as unlimited.
+    int64_t myTime = std::max<int64_t>(1, myTimeRaw);
 
     limited = true;
     int mtg = limits.movestogo > 0 ? limits.movestogo : 30;
@@ -468,6 +476,7 @@ void Search::go(Board board, const SearchLimits& limits) {
     Move bestMove = rootMoves.moves[0];
     int bestScore = 0;
     int maxDepth = (limits.depth > 0) ? limits.depth : (MAX_PLY - 1);
+    int stableDepths = 0;
 
     for (int depth = 1; depth <= maxDepth; depth++) {
         int score;
@@ -490,7 +499,10 @@ void Search::go(Board board, const SearchLimits& limits) {
 
         bestScore = score;
         TTEntry tte;
-        if (g_tt.probe(board.hash, tte) && tte.move != NO_MOVE) bestMove = tte.move;
+        Move newBest = bestMove;
+        if (g_tt.probe(board.hash, tte) && tte.move != NO_MOVE) newBest = tte.move;
+        stableDepths = (newBest == bestMove) ? stableDepths + 1 : 0;
+        bestMove = newBest;
         printInfo(depth, bestScore, board);
 
         if (stopFlag.load(std::memory_order_relaxed)) break;
@@ -500,7 +512,10 @@ void Search::go(Board board, const SearchLimits& limits) {
         if (limited) {
             auto now = clock_t_::now();
             int64_t elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(now - startTime).count();
-            if (elapsed >= softMs) break;
+            // If the best move keeps changing, allow searching a bit longer
+            // (up to the hard limit) before committing to it.
+            int64_t effectiveSoft = (stableDepths < 2) ? std::min(hardMs, softMs + softMs / 2) : softMs;
+            if (elapsed >= effectiveSoft) break;
         }
     }
 
