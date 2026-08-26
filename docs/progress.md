@@ -18,3 +18,12 @@ Start time: 2026-08-26T16:32:02-04:00 (local). Deadline: 2026-08-27T16:32:02-04:
 - Next: scaffold source/ directory, board representation + move generator,
   get perft passing first (this is the top priority correctness gate before
   anything else).
+
+**First perft pass: 2026-08-26 16:38** (6 minutes in). Bitboard board
+representation, PEXT-based slider attacks, make/unmake move, legal move
+generator (pseudo-legal + make/test-check/unmake filter). All 126 positions
+in resources/perft/perft.epd pass at depth <=5 (395,673,136 nodes, ~53M nps)
+on the first run — no movegen bugs found. Startpos depth 6 also verified
+(119,060,324 nodes, matches exactly). Moving on to search/eval/UCI next;
+will revisit movegen speed (pin-aware legal generation) only if NPS proves
+to be a search bottleneck later.
