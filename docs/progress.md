@@ -214,3 +214,22 @@ to be a search bottleneck later.
   since the constants added this session (LMR reduction amounts, futility/
   RFP/razoring margins) were never tuned, just reasoned from typical
   published ranges.
+
+## Hour 3 continued — 2026-08-26 18:45
+
+- stash-21 (~2710 CCRL) bracket match, 200 games at 10+0.1, concurrency 8,
+  no competing foreground load: **score 92/200 = 46.0%, 200/200 normal
+  terminations** (perfect reliability record on this batch). Estimate from
+  this match alone: ~2682. Combined with the stash-20 result (~2610), the
+  two brackets converge nicely on **an estimate of roughly 2650, +/-50ish**.
+  That's up from ~2350 at the one-hour mark — the eval terms, pruning, IID
+  and the time-management bug fix together were worth on the order of 250-300
+  Elo in about 90 minutes of focused work.
+- Next: keep iterating with cheaply-verified, well-established techniques
+  (passed-pawn king proximity/rook-behind-passed-pawn, countermove ordering
+  heuristic are the next candidates) rather than chasing exotic ideas; budget
+  some time later for lightly tuning the untuned constants added this hour
+  (LMR/futility/RFP/razoring margins were reasoned from typical published
+  ranges, never tuned on this engine specifically). Continue the "no
+  foreground CPU work during background matches" discipline and periodic
+  self-play stress tests after any search-path change.
