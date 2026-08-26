@@ -99,3 +99,51 @@ to be a search bottleneck later.
   history-based move ordering polish, IID) or a proper multi-round Stash
   ladder match to re-anchor the Elo estimate, budgeting for the fact this is
   already ~1 hour in with the core engine fully functional and reliable.
+
+## Hour 2 — 2026-08-26 17:50
+
+- Pruning bundle (RFP + futility + SEE pruning) confirmed strong: 143 games
+  vs the eval-only build, 66.8% score, 100% normal terminations. Promoted to
+  `final/`.
+- Added a king-attack-pressure king-safety eval term and a best-move-stability
+  time-management heuristic (search a bit longer, up to the hard limit, when
+  the best move keeps changing between iterations).
+- **Second critical bug, found via a self-play sanity match (engine vs itself
+  to cross-check the king-safety change):** one game out of 65 ended with
+  fastchess reporting "White's connection stalls" — the engine simply never
+  answered a `go`. Root-caused quickly this time (minutes, not hours) by
+  reading the actual PGN comments and reasoning about the time-control state
+  at that point in the game: `SearchLimits` used `-1` as the sentinel for
+  "wtime/btime/movetime not sent by the GUI", but also silently treated *any*
+  other negative or zero value the same way (as "unlimited"). A real GUI can
+  legitimately send `wtime 0` or even a slightly negative value once a clock
+  is essentially exhausted — my code then thought no time control was active
+  at all and searched with no time bound, until manually stopped. Fixed by
+  giving "not sent" its own distinct sentinel (`INT64_MIN`) so an
+  explicitly-sent zero/negative time value is instead clamped to a minimal
+  bounded budget. Verified fixed: `go wtime 0`, `go wtime -50`, `go movetime 0`,
+  `go movetime -100` (all previously would have hung) now return `bestmove`
+  in a few hundred ms. This was already present in the very first `final/`
+  build from Hour 1 and has now been fixed there too.
+  **Lesson: self-play matches between the engine's own successive versions
+  are a cheap, effective way to catch protocol/time-management bugs that a
+  short manual smoke test won't stumble into — worth doing routinely, not
+  just for measuring Elo.**
+- Current `final/` build: material+PST tapered eval, passed/isolated/doubled
+  pawns, bishop pair, rook on open/semi-open file, king safety (pawn shield +
+  attacker-pressure), mobility; negamax/PVS with TT, null-move pruning, LMR,
+  reverse futility pruning, futility pruning, SEE-based capture pruning,
+  aspiration windows, best-move-stability time extension. All of the above
+  stress-tested against pathological time-control inputs (0, negative,
+  movestogo=1, infinite+stop) with zero failures, and passes fastchess
+  --compliance (40/40) and perft (126/126 through depth 5, plus startpos
+  depth 6).
+- Elo estimate: still anchored at the earlier ~2350 vs stash-20 measurement,
+  now stale (predates the eval/pruning improvements, which measured +130ish
+  Elo net over that baseline in engine-vs-engine testing) — plan a fresh
+  Stash-ladder match this hour or next to re-anchor with the current build.
+- Next: run a proper multi-round match against stash-20/21 with the current
+  final/ build to get a fresh absolute Elo estimate; keep making targeted,
+  cheaply-verified search/eval improvements in between; keep doing quick
+  self-play sanity matches after each change specifically to catch
+  protocol-level issues like this one, not just to measure strength.
