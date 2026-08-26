@@ -184,3 +184,33 @@ to be a search bottleneck later.
   measured search/eval improvements (already added IID and razoring this
   hour, not yet promoted/validated), and start bracketing strength against
   stash-21 (~2710) to narrow the estimate further.
+
+## Hour 3 — 2026-08-26 18:30
+
+- Clean reliability check (concurrency 8, no competing foreground load)
+  finished: 120/120 games, zero issues attributable to us (1 "time forfeit"
+  was stash20 losing on its own clock). This confirms the earlier single
+  "abandoned" game was very likely caused by *my own* testing methodology
+  (running a concurrency-10 match while simultaneously compiling/testing in
+  the foreground, oversubscribing the CPU beyond anything the real
+  tournament will do) rather than a remaining engine bug, on top of the
+  time-sentinel bug already fixed. **Process change for the rest of the run:
+  never do CPU-heavy foreground work while a concurrency>=8 background match
+  is active.** Bumped Move Overhead default 30ms -> 40ms as cheap extra
+  margin regardless.
+- Added internal iterative deepening (IID: shallow search first at PV nodes
+  with no TT move, to seed move ordering) and razoring (drop to quiescence
+  early when static eval is hopelessly below alpha at very shallow depth).
+  Validated with a 240-game match at 10+0.1 vs the pre-IID build: 54.6%
+  score, **zero abnormal terminations** (clean concurrency-8 conditions).
+  Promoted to `final/`.
+- Elo estimate: ~2610 baseline (from the 200-game stash-20 match) plus this
+  hour's further +Elo from IID/razoring (not separately re-measured against
+  Stash yet, but the internal comparison was unambiguous) — treat current
+  estimate as **~2630-2650**, still to be re-anchored.
+- Next: bracket strength with a stash-21 (~2710) match to narrow the
+  estimate now that we're in that range; keep to the "no foreground work
+  during background matches" discipline; consider search/eval tuning next
+  since the constants added this session (LMR reduction amounts, futility/
+  RFP/razoring margins) were never tuned, just reasoned from typical
+  published ranges.
