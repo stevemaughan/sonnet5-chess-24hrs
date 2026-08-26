@@ -1,0 +1,11 @@
+resources/
+*.pgn
+*.o
+*.obj
+*.exe
+!final/Sonnet5chess24hrs.exe
+source/build/
+source/tests/*.pgn
+*.log
+*.tmp
+docs/*.epd.out
