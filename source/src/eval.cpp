@@ -1,6 +1,7 @@
 #include "eval.hpp"
 #include "bitboard.hpp"
 #include <cstring>
+#include <algorithm>
 
 // Tables below are written in "printed" order: row 0 = rank 8 ... row 7 = rank 1,
 // each row a1-file..h-file left to right, matching common chess-board PST layouts
@@ -90,6 +91,8 @@ static const int KingEG[64] = {
 
 static int PST_MG[6][64];
 static int PST_EG[6][64];
+static Bitboard PassedMask[COLOR_NB][64];
+static Bitboard AdjFiles[8];
 
 static const int MaterialMG[6] = { 100, 320, 330, 500, 900, 0 };
 static const int MaterialEG[6] = { 120, 320, 330, 530, 950, 0 };
@@ -100,6 +103,24 @@ static void flatten(const int printedTable[64], int out[64]) {
     for (int sq = 0; sq < 64; sq++) {
         int r = rankOf(sq), f = fileOf(sq);
         out[sq] = printedTable[(7 - r) * 8 + f];
+    }
+}
+
+static void initEvalMasks() {
+    for (int f = 0; f < 8; f++) {
+        Bitboard m = 0;
+        if (f > 0) m |= fileBB(f - 1);
+        if (f < 7) m |= fileBB(f + 1);
+        AdjFiles[f] = m;
+    }
+    for (int sq = 0; sq < 64; sq++) {
+        int f = fileOf(sq), r = rankOf(sq);
+        Bitboard files = fileBB(f) | AdjFiles[f];
+        Bitboard whiteMask = 0, blackMask = 0;
+        for (int rr = r + 1; rr < 8; rr++) whiteMask |= (files & rankBB(rr));
+        for (int rr = r - 1; rr >= 0; rr--) blackMask |= (files & rankBB(rr));
+        PassedMask[WHITE][sq] = whiteMask;
+        PassedMask[BLACK][sq] = blackMask;
     }
 }
 
@@ -116,6 +137,61 @@ void initEval() {
     flatten(RookMG, PST_EG[ROOK]);
     flatten(QueenMG, PST_EG[QUEEN]);
     flatten(KingEG, PST_EG[KING]);
+    initEvalMasks();
+}
+
+static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
+    Color them = ~us;
+    Bitboard ownPawns = b.pieceBB[makePiece(us, PAWN)];
+    Bitboard enemyPawns = b.pieceBB[makePiece(them, PAWN)];
+
+    Bitboard bb = ownPawns;
+    while (bb) {
+        int sq = popLsb(bb);
+        int f = fileOf(sq);
+
+        if (!(PassedMask[us][sq] & enemyPawns)) {
+            int rank = rankOf(sq);
+            int advance = (us == WHITE) ? rank : 7 - rank;
+            static const int passedMG[8] = { 0, 5, 10, 20, 35, 55, 80, 0 };
+            static const int passedEG[8] = { 0, 10, 20, 40, 65, 100, 150, 0 };
+            mg += passedMG[advance];
+            eg += passedEG[advance];
+        }
+        if (!(AdjFiles[f] & ownPawns)) { mg -= 12; eg -= 18; }
+    }
+    for (int f = 0; f < 8; f++) {
+        int cnt = popcount(ownPawns & fileBB(f));
+        if (cnt > 1) { mg -= 10 * (cnt - 1); eg -= 20 * (cnt - 1); }
+    }
+}
+
+static void pieceBonuses(const Board& b, Color us, int& mg, int& eg) {
+    Color them = ~us;
+    Bitboard ownPawns = b.pieceBB[makePiece(us, PAWN)];
+    Bitboard enemyPawns = b.pieceBB[makePiece(them, PAWN)];
+
+    if (popcount(b.pieceBB[makePiece(us, BISHOP)]) >= 2) { mg += 30; eg += 45; }
+
+    Bitboard rooks = b.pieceBB[makePiece(us, ROOK)];
+    while (rooks) {
+        int sq = popLsb(rooks);
+        int f = fileOf(sq);
+        bool ownOnFile = (ownPawns & fileBB(f)) != 0;
+        bool enemyOnFile = (enemyPawns & fileBB(f)) != 0;
+        if (!ownOnFile && !enemyOnFile) { mg += 20; eg += 10; }
+        else if (!ownOnFile) { mg += 10; eg += 5; }
+    }
+
+    int ksq = lsb(b.pieceBB[makePiece(us, KING)]);
+    int kf = fileOf(ksq), kr = rankOf(ksq);
+    int shieldRank = (us == WHITE) ? kr + 1 : kr - 1;
+    if (shieldRank >= 0 && shieldRank < 8) {
+        int shieldCount = 0;
+        for (int f = std::max(0, kf - 1); f <= std::min(7, kf + 1); f++)
+            if (ownPawns & squareBB(shieldRank * 8 + f)) shieldCount++;
+        mg += (shieldCount - 3) * 10;
+    }
 }
 
 static int mobilityScore(const Board& b, Color us) {
@@ -152,6 +228,14 @@ int evaluate(const Board& b) {
     int mob = mobilityScore(b, WHITE) - mobilityScore(b, BLACK);
     mg += mob * 3;
     eg += mob * 2;
+
+    int wmg = 0, weg = 0, bmg = 0, beg = 0;
+    pawnStructure(b, WHITE, wmg, weg);
+    pieceBonuses(b, WHITE, wmg, weg);
+    pawnStructure(b, BLACK, bmg, beg);
+    pieceBonuses(b, BLACK, bmg, beg);
+    mg += wmg - bmg;
+    eg += weg - beg;
 
     if (phase > MAX_PHASE) phase = MAX_PHASE;
     int score = (mg * phase + eg * (MAX_PHASE - phase)) / MAX_PHASE;

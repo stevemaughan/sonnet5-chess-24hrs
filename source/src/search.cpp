@@ -96,6 +96,56 @@ static int scoreCapture(const Board& b, Move m) {
     return score;
 }
 
+// Static Exchange Evaluation: material result of the capture sequence on the
+// target square, assuming both sides recapture with their least valuable
+// attacker each time. Standard "swap algorithm" (chessprogramming.org).
+static int see(const Board& b, Move m) {
+    int from = moveFrom(m), to = moveTo(m);
+    Color us = colorOf(b.pieceOn[from]);
+    Bitboard occ = b.occAll;
+    int capturedVal;
+    if (isEnPassant(m)) {
+        capturedVal = PieceVal[PAWN];
+        int capSq = to + (us == WHITE ? SOUTH : NORTH);
+        occ &= ~squareBB(capSq);
+    } else if (isCapture(m)) {
+        capturedVal = PieceVal[typeOf(b.pieceOn[to])];
+    } else {
+        capturedVal = 0;
+    }
+
+    PieceType curType = typeOf(b.pieceOn[from]);
+    occ &= ~squareBB(from);
+    Color side = ~us;
+
+    int gain[32];
+    gain[0] = capturedVal;
+    int d = 0;
+
+    Bitboard attackers = b.attackersTo(to, occ);
+
+    while (true) {
+        Bitboard sideAtt = attackers & b.occ[side] & occ;
+        if (!sideAtt) break;
+        PieceType nextType = NO_PIECE_TYPE;
+        Bitboard nextBB = 0;
+        for (int pt = PAWN; pt <= KING; pt++) {
+            Bitboard cand = sideAtt & b.pieceBB[makePiece(side, (PieceType)pt)];
+            if (cand) { nextType = (PieceType)pt; nextBB = cand & (0ULL - cand); break; }
+        }
+        if (d + 1 >= 32) break;
+        d++;
+        gain[d] = PieceVal[curType] - gain[d - 1];
+        if (std::max(-gain[d - 1], gain[d]) < 0) break;
+        occ &= ~nextBB;
+        attackers = b.attackersTo(to, occ);
+        curType = nextType;
+        side = ~side;
+    }
+    while (d > 0) { gain[d - 1] = -std::max(-gain[d - 1], gain[d]); d--; }
+    return gain[0];
+}
+
 static int scoreMove(const Board& b, Move m, Move ttMove, int ply) {
     if (m == ttMove) return 2000000;
     if (isCapture(m)) return scoreCapture(b, m);
@@ -154,6 +204,7 @@ static int quiescence(Board& b, int alpha, int beta, int ply) {
         if (!inCheck && isCapture(m)) {
             PieceType victim = isEnPassant(m) ? PAWN : typeOf(b.pieceOn[moveTo(m)]);
             if (standPat + PieceVal[victim] + 200 < alpha && !isPromo(m)) continue;
+            if (!isPromo(m) && see(b, m) < 0) continue;
         }
 
         Undo u;
@@ -214,6 +265,13 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
 
     int staticEval = inCheck ? -INF_SCORE : evaluate(b);
 
+    // Reverse futility pruning: if static eval is already comfortably above beta
+    // at shallow depth, assume the position is too good and cut off early.
+    if (!inCheck && !pvNode && ply > 0 && depth <= 7 &&
+        staticEval - 80 * depth >= beta && staticEval < MATE_IN_MAX) {
+        return staticEval;
+    }
+
     if (!inCheck && !pvNode && doNull && depth >= 3 && ply > 0 &&
         staticEval >= beta && hasNonPawnMaterial(b, b.sideToMove)) {
         Undo u;
@@ -251,6 +309,27 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         int extension = givesCheck ? 1 : 0;
         int newDepth = depth - 1 + extension;
         int score;
+
+        // SEE pruning: at shallow depth, skip captures that lose material outright
+        // (bad trades are very unlikely to be worth searching once we already have
+        // a reasonable candidate move).
+        if (!inCheck && !pvNode && !isQuiet && !isPromo(m) && !givesCheck && legalCount > 1 &&
+            depth <= 8 && alpha > -MATE_IN_MAX && see(b, m) < -20 * depth) {
+            popHistoryKey();
+            b.unmakeMove(m, u);
+            continue;
+        }
+
+        // Futility pruning: at shallow depth, a quiet non-checking move that can't
+        // plausibly close the gap to alpha given the static eval is skipped outright.
+        static const int FutilityMargin[7] = { 0, 120, 180, 260, 340, 420, 500 };
+        if (!inCheck && !pvNode && isQuiet && !givesCheck && legalCount > 1 &&
+            depth >= 1 && depth <= 6 && alpha > -MATE_IN_MAX &&
+            staticEval + FutilityMargin[depth] <= alpha) {
+            popHistoryKey();
+            b.unmakeMove(m, u);
+            continue;
+        }
 
         if (legalCount == 1) {
             score = -negamax(b, newDepth, -beta, -alpha, ply + 1, true);

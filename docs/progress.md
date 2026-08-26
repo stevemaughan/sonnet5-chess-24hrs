@@ -69,8 +69,33 @@ to be a search bottleneck later.
   DLLs) — no MinGW runtime DLL dependency. ~8.3M nps single-threaded on this
   machine at reasonable middlegame positions.
 - First deployable build copied to `final/Sonnet5chess24hrs.exe`.
-- Elo estimate: not yet measurable (smoke match running).
-- Next hour: check smoke match result; if solid, spend remaining time on
-  evaluation quality (pawn structure, king safety, mobility tuning) and
-  search tuning, with periodic SPRT-style checks against Stash versions to
-  track progress, always keeping `final/` on the last verified-good build.
+- Elo estimate: smoke match vs stash-20 (CCRL ~2510) finished: 80/80 games,
+  **zero crashes/time losses** (all Termination "normal"), score 22.5/80
+  (28.1%) -> rough estimate **~2350 Elo** (wide uncertainty, small sample).
+  final/ deployed and confirmed reliable at the real 10+0.1 time control.
+- Added evaluation terms on top of the material+PST+mobility base: passed
+  pawns (rank-scaled, bigger in endgame), isolated/doubled pawn penalties,
+  bishop pair bonus, rook on open/semi-open file, and a simple king pawn
+  shield term. Verified with a same-time-control match vs the pre-change
+  build: 162 games, 56.2% score for the new eval, 100% normal terminations
+  (stopped short of full SPRT convergence deliberately — the trend was
+  already clearly positive and these are standard, low-risk eval terms used
+  by virtually every engine, so further confirmation games were not worth
+  the wall-clock; accepted on the partial result + reasoning per the
+  "measure vs accept on judgement" guidance).
+- Added three standard, well-established search pruning techniques: reverse
+  futility pruning (fail-high cutoff when static eval far exceeds beta at
+  shallow depth), futility pruning (skip hopeless quiet moves at shallow
+  depth when static eval is far below alpha), and SEE (static exchange
+  evaluation, full swap-algorithm) used both to prune bad captures in
+  quiescence and to skip clearly-losing captures at shallow depth in the
+  main search. A same-time-control match vs the pre-pruning build is running
+  now to sanity-check no regression before this becomes the new `final/`.
+- Elo estimate: ~2350 confirmed baseline; eval+pruning bundle expected to be
+  meaningfully stronger (node efficiency alone dropped ~3x at equal depth
+  from the pruning), not yet re-measured against Stash directly.
+- Next: check the pruning-bundle sanity match; if clean, promote to
+  `final/`, then continue with either more search refinements (SEE-based or
+  history-based move ordering polish, IID) or a proper multi-round Stash
+  ladder match to re-anchor the Elo estimate, budgeting for the fact this is
+  already ~1 hour in with the core engine fully functional and reliable.

@@ -32,7 +32,7 @@
         "additional_lines_rgx": [],
         "event_name": "Fastchess Tournament",
         "site": "?",
-        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/mine_vs_stash20_smoke.pgn",
+        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/new2_vs_new1_pruning.pgn",
         "notation": 0,
         "append_file": true,
         "track_nodes": false,
@@ -60,17 +60,17 @@
     },
     "config_name": "config.json",
     "output": 0,
-    "seed": 1018822255946748045,
+    "seed": 15645204456549300664,
     "variant": 0,
     "type": 0,
     "gauntlet_seeds": 1,
-    "ratinginterval": 10,
+    "ratinginterval": 30,
     "scoreinterval": 1,
     "wait": 0,
     "autosaveinterval": 20,
     "games": 2,
-    "rounds": 40,
-    "concurrency": 8,
+    "rounds": 150,
+    "concurrency": 10,
     "force_concurrency": false,
     "recover": true,
     "noswap": false,
@@ -89,9 +89,9 @@
     },
     "engines": [
         {
-            "name": "mine",
+            "name": "new2",
             "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/final/Sonnet5chess24hrs.exe",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/new2.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -114,9 +114,9 @@
             "variant": 0
         },
         {
-            "name": "stash20",
+            "name": "new1",
             "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/resources/engines/stash-20.0.1-windows-x86_64-bmi2.exe",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/new.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -140,16 +140,16 @@
         }
     ],
     "stats": {
-        "mine vs stash20": {
-            "wins": 5,
-            "losses": 11,
-            "draws": 2,
-            "penta_WW": 1,
-            "penta_WD": 1,
-            "penta_WL": 2,
-            "penta_DD": 0,
-            "penta_LD": 1,
-            "penta_LL": 4
+        "new2 vs new1": {
+            "wins": 17,
+            "losses": 3,
+            "draws": 20,
+            "penta_WW": 3,
+            "penta_WD": 10,
+            "penta_WL": 1,
+            "penta_DD": 4,
+            "penta_LD": 2,
+            "penta_LL": 0
         }
     }
 }
