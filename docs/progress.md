@@ -233,3 +233,28 @@ to be a search bottleneck later.
   ranges, never tuned on this engine specifically). Continue the "no
   foreground CPU work during background matches" discipline and periodic
   self-play stress tests after any search-path change.
+
+## Hour 4 — 2026-08-26 19:05
+
+- Added passed-pawn king-proximity (endgame king tropism to the promotion
+  square), rook-behind-passed-pawn (Tarrasch rule), and a countermove
+  move-ordering heuristic (per [piece][to-square] of the opponent's last
+  move, tracked table of the response that most recently caused a beta
+  cutoff, used as an ordering tier between killers and history). Validated:
+  240 games @ 10+0.1 vs the pre-change build, 56.0% score, **zero abnormal
+  terminations**. Also ran a 3-game realistic-clock self-play stress test
+  (source/tests/selfplay_stress.sh) beforehand as a routine check — clean.
+  Promoted to `final/`.
+- Process note: kept strictly to "no foreground CPU work while a background
+  match is running" this hour; no reliability issues observed since adopting
+  that discipline (0 abnormal terminations across the last ~600 test games).
+- Elo estimate: was ~2650 before this hour's changes (stash-20/21 brackets);
+  this hour's confirmed-positive change (+56% internal) hasn't been
+  re-measured against Stash directly yet, so treat current estimate as
+  **~2650-2680**, to be re-anchored next.
+- Next: re-anchor with a fresh stash-21 (or stash-25, ~2940, to start
+  bracketing the next rung) match; then decide between further eval/search
+  features vs. lightly tuning existing untuned constants, budgeting against
+  the fact roughly 3.5 hours have produced the large majority of the
+  strength gain so far and returns may start diminishing — will reassess
+  each hour rather than assume.
