@@ -280,6 +280,16 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         return staticEval;
     }
 
+    // Razoring: hopelessly far below alpha at very shallow depth — drop
+    // straight to quiescence rather than doing a full-width search that is
+    // very unlikely to recover.
+    if (!inCheck && !pvNode && ply > 0 && depth <= 3 &&
+        staticEval + 200 + 150 * depth <= alpha) {
+        int razorScore = quiescence(b, alpha, beta, ply);
+        if (stopFlag.load(std::memory_order_relaxed)) return 0;
+        if (razorScore <= alpha) return razorScore;
+    }
+
     if (!inCheck && !pvNode && doNull && depth >= 3 && ply > 0 &&
         staticEval >= beta && hasNonPawnMaterial(b, b.sideToMove)) {
         Undo u;
@@ -291,6 +301,16 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         b.unmakeNullMove(u);
         if (stopFlag.load(std::memory_order_relaxed)) return 0;
         if (score >= beta) return (score >= MATE_IN_MAX) ? beta : score;
+    }
+
+    // Internal iterative deepening: PV nodes with no TT move to order by are
+    // the most expensive to search badly-ordered, so spend a shallower
+    // search first just to get a decent move to try first.
+    if (pvNode && ttMove == NO_MOVE && depth >= 6) {
+        negamax(b, depth - 2, alpha, beta, ply, true);
+        if (stopFlag.load(std::memory_order_relaxed)) return 0;
+        TTEntry iidTte;
+        if (g_tt.probe(b.hash, iidTte)) ttMove = iidTte.move;
     }
 
     MoveList list;

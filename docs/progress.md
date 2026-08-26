@@ -147,3 +147,40 @@ to be a search bottleneck later.
   cheaply-verified search/eval improvements in between; keep doing quick
   self-play sanity matches after each change specifically to catch
   protocol-level issues like this one, not just to measure strength.
+
+## Hour 2 continued — 2026-08-26 18:00
+
+- Ran a 200-game match, final/ (time-fix build) vs stash-20 at the real
+  10+0.1 control: **score 128/200 = 64.0%** — a large jump from the earlier
+  ~28% baseline. Rough Elo estimate now **~2610** (stash-20 ~2510 + ~100).
+  Terminations: 198 normal, 1 "time forfeit" (that one was stash20 losing on
+  time, not us — not our problem), 1 "abandoned" (fastchess reported "Black's
+  connection stalls", i.e. our engine, mid-game).
+- Investigated the abandoned game directly: no crash (checked Windows
+  Application Error log for the process — nothing, ever). Wrote a self-play
+  stress-test script (source/tests/selfplay_stress.sh) that drives the engine
+  through full realistic games over raw UCI with correctly-decrementing
+  wtime/btime, specifically to hunt for time-management hangs; 2 full 140-ply
+  games came back clean. Best current explanation: **I was running this
+  200-game match at -concurrency 10 while simultaneously doing my own
+  foreground compiles/tests on the same 12-core machine**, oversubscribing
+  the CPU beyond even what the real tournament will do — a starved process
+  could miss its own wall-clock budget through no logic fault. Also already
+  fixed the one *confirmed, reproduced* time-sentinel bug (see above) that
+  fully explains the earlier self-play stall. Mitigation going forward: don't
+  run CPU-heavy foreground work while a concurrency-10 background match is
+  active; a clean validation match (concurrency 8, nothing else running) is
+  in progress now specifically to check whether stalls still occur under
+  uncontested conditions. If this single 1/200 stall recurs under clean
+  conditions, treat it as a real bug and keep digging before trusting
+  final/; if it doesn't, treat it as resolved (both mechanisms — the
+  time-sentinel fix and CPU contention — point the same direction) but keep
+  an eye out.
+- Elo estimate: **~2610**, evidence: 200 games vs stash-20 (CCRL ~2510) at
+  10+0.1, 64.0% score. Wide-ish uncertainty (~±60-80 Elo) from sample size
+  and CCRL-vs-this-hardware differences, but a real, large improvement over
+  the Hour-1 baseline.
+- Next: finish the clean reliability check; if clean, continue with
+  measured search/eval improvements (already added IID and razoring this
+  hour, not yet promoted/validated), and start bracketing strength against
+  stash-21 (~2710) to narrow the estimate further.
