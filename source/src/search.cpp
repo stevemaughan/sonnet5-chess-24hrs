@@ -31,6 +31,8 @@ static int moveOverheadMs = 40;
 
 static Move killers[MAX_PLY][2];
 static int historyTable[12][64];
+static Move counterMoveTable[12][64];
+static Move searchStackMove[MAX_PLY];
 
 static inline void pushHistoryKey(uint64_t h) { if (historyTop < MAX_HIST) historyStack[historyTop++] = h; }
 static inline void popHistoryKey() { if (historyTop > 0) historyTop--; }
@@ -160,6 +162,13 @@ static int scoreMove(const Board& b, Move m, Move ttMove, int ply) {
     if (isPromo(m)) return 900000 + PieceVal[promoType(m)];
     if (m == killers[ply][0]) return 800000;
     if (m == killers[ply][1]) return 799000;
+    if (ply > 0) {
+        Move parentMove = searchStackMove[ply - 1];
+        if (parentMove != NO_MOVE) {
+            Piece parentPiece = b.pieceOn[moveTo(parentMove)];
+            if (counterMoveTable[parentPiece][moveTo(parentMove)] == m) return 750000;
+        }
+    }
     Piece p = b.pieceOn[moveFrom(m)];
     return historyTable[p][moveTo(m)];
 }
@@ -295,6 +304,7 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         Undo u;
         b.makeNullMove(u);
         pushHistoryKey(b.hash);
+        searchStackMove[ply] = NO_MOVE;
         int R = 3 + depth / 6;
         int score = -negamax(b, depth - 1 - R, -beta, -beta + 1, ply + 1, false);
         popHistoryKey();
@@ -359,6 +369,8 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
             continue;
         }
 
+        searchStackMove[ply] = m;
+
         if (legalCount == 1) {
             score = -negamax(b, newDepth, -beta, -alpha, ply + 1, true);
         } else {
@@ -395,6 +407,13 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
                             for (int pp = 0; pp < 12; pp++)
                                 for (int sq = 0; sq < 64; sq++)
                                     historyTable[pp][sq] >>= 1;
+                        }
+                        if (ply > 0) {
+                            Move parentMove = searchStackMove[ply - 1];
+                            if (parentMove != NO_MOVE) {
+                                Piece parentPiece = b.pieceOn[moveTo(parentMove)];
+                                counterMoveTable[parentPiece][moveTo(parentMove)] = m;
+                            }
                         }
                     }
                     break;
@@ -461,6 +480,7 @@ void Search::newGame() {
     g_tt.clear();
     memset(historyTable, 0, sizeof(historyTable));
     memset(killers, 0, sizeof(killers));
+    memset(counterMoveTable, 0, sizeof(counterMoveTable));
     gameHistoryLen = 0;
 }
 

@@ -140,10 +140,18 @@ void initEval() {
     initEvalMasks();
 }
 
+static int chebyshevDist(int sq1, int sq2) {
+    int df = fileOf(sq1) - fileOf(sq2), dr = rankOf(sq1) - rankOf(sq2);
+    return std::max(std::abs(df), std::abs(dr));
+}
+
 static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
     Color them = ~us;
     Bitboard ownPawns = b.pieceBB[makePiece(us, PAWN)];
     Bitboard enemyPawns = b.pieceBB[makePiece(them, PAWN)];
+    Bitboard ownRooks = b.pieceBB[makePiece(us, ROOK)];
+    int ourKing = lsb(b.pieceBB[makePiece(us, KING)]);
+    int theirKing = lsb(b.pieceBB[makePiece(them, KING)]);
 
     Bitboard bb = ownPawns;
     while (bb) {
@@ -157,6 +165,20 @@ static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
             static const int passedEG[8] = { 0, 10, 20, 40, 65, 100, 150, 0 };
             mg += passedMG[advance];
             eg += passedEG[advance];
+
+            // King proximity to the passed pawn's promotion square matters a
+            // lot in the endgame: reward our king being close (can escort),
+            // penalize the enemy king being close (can blockade/win it).
+            int promoSq = makeSquare(f, us == WHITE ? 7 : 0);
+            eg += (chebyshevDist(theirKing, promoSq) - chebyshevDist(ourKing, promoSq)) * 5;
+
+            // Rook behind a passed pawn (Tarrasch rule) supports its advance.
+            Bitboard rooksOnFile = ownRooks & fileBB(f);
+            while (rooksOnFile) {
+                int rsq = popLsb(rooksOnFile);
+                bool behind = (us == WHITE) ? (rankOf(rsq) < rank) : (rankOf(rsq) > rank);
+                if (behind) { mg += 10; eg += 20; }
+            }
         }
         if (!(AdjFiles[f] & ownPawns)) { mg -= 12; eg -= 18; }
     }

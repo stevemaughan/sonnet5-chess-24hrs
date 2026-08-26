@@ -32,7 +32,7 @@
         "additional_lines_rgx": [],
         "event_name": "Fastchess Tournament",
         "site": "?",
-        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/mine_vs_stash21.pgn",
+        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/cand3_vs_base.pgn",
         "notation": 0,
         "append_file": true,
         "track_nodes": false,
@@ -60,7 +60,7 @@
     },
     "config_name": "config.json",
     "output": 0,
-    "seed": 15526680747091287295,
+    "seed": 5885549238230886065,
     "variant": 0,
     "type": 0,
     "gauntlet_seeds": 1,
@@ -69,7 +69,7 @@
     "wait": 0,
     "autosaveinterval": 20,
     "games": 2,
-    "rounds": 100,
+    "rounds": 120,
     "concurrency": 8,
     "force_concurrency": false,
     "recover": true,
@@ -89,9 +89,9 @@
     },
     "engines": [
         {
-            "name": "mine",
+            "name": "cand3",
             "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/final/Sonnet5chess24hrs.exe",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/cand3.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -114,9 +114,9 @@
             "variant": 0
         },
         {
-            "name": "stash21",
+            "name": "base",
             "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/resources/engines/stash-21.0-windows-x86_64-bmi2.exe",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/final/Sonnet5chess24hrs.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -140,16 +140,16 @@
         }
     ],
     "stats": {
-        "mine vs stash21": {
-            "wins": 75,
-            "losses": 91,
-            "draws": 34,
-            "penta_WW": 16,
-            "penta_WD": 10,
-            "penta_WL": 33,
-            "penta_DD": 3,
-            "penta_LD": 18,
-            "penta_LL": 20
+        "cand3 vs base": {
+            "wins": 76,
+            "losses": 47,
+            "draws": 117,
+            "penta_WW": 6,
+            "penta_WD": 43,
+            "penta_WL": 21,
+            "penta_DD": 26,
+            "penta_LD": 22,
+            "penta_LL": 2
         }
     }
 }
