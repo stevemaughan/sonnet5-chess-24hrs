@@ -192,6 +192,28 @@ static void pieceBonuses(const Board& b, Color us, int& mg, int& eg) {
             if (ownPawns & squareBB(shieldRank * 8 + f)) shieldCount++;
         mg += (shieldCount - 3) * 10;
     }
+
+    // King attack pressure: weight enemy pieces that bear on the squares
+    // around our king; a lone attacker is largely harmless, so the penalty
+    // only kicks in once at least two pieces are involved (classic "attack
+    // units" idea from CPW's King Safety article).
+    Bitboard zone = KingAttacks[ksq] | squareBB(ksq);
+    Bitboard occ = b.occAll;
+    int attackUnits = 0, attackerCount = 0;
+
+    Bitboard n = b.pieceBB[makePiece(them, KNIGHT)];
+    while (n) { int s = popLsb(n); if (KnightAttacks[s] & zone) { attackUnits += 2; attackerCount++; } }
+    Bitboard bi = b.pieceBB[makePiece(them, BISHOP)];
+    while (bi) { int s = popLsb(bi); if (bishopAttacks(s, occ) & zone) { attackUnits += 2; attackerCount++; } }
+    Bitboard r = b.pieceBB[makePiece(them, ROOK)];
+    while (r) { int s = popLsb(r); if (rookAttacks(s, occ) & zone) { attackUnits += 3; attackerCount++; } }
+    Bitboard q = b.pieceBB[makePiece(them, QUEEN)];
+    while (q) { int s = popLsb(q); if (queenAttacks(s, occ) & zone) { attackUnits += 5; attackerCount++; } }
+
+    if (attackerCount >= 2) {
+        int penalty = std::min(400, attackUnits * attackUnits / 2);
+        mg -= penalty;
+    }
 }
 
 static int mobilityScore(const Board& b, Color us) {
