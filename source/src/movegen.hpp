@@ -5,7 +5,9 @@
 struct MoveList {
     Move moves[256];
     int count = 0;
-    void add(Move m) { moves[count++] = m; }
+    // Defensive bound: real chess positions never approach 256 legal moves;
+    // silently drop rather than corrupt memory in the (unreachable) overflow case.
+    void add(Move m) { if (count < 256) moves[count++] = m; }
 };
 
 void generatePseudoLegal(const Board& b, MoveList& list);
