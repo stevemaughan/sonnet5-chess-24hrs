@@ -27,7 +27,7 @@ static uint64_t nodeCount = 0;
 static clock_t_::time_point startTime;
 static int64_t softMs = -1, hardMs = -1;
 static bool limited = false;
-static int moveOverheadMs = 30;
+static int moveOverheadMs = 40;
 
 static Move killers[MAX_PLY][2];
 static int historyTable[12][64];
