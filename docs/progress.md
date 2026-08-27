@@ -579,3 +579,40 @@ to be a search bottleneck later.
   quick sanity checks but treat a single isolated abandoned game in a
   self-play batch as noise rather than a fire alarm, while continuing to
   treat any stall in a Stash match as a serious signal worth investigating.
+
+  (Note: this log file's entries got a bit out of chronological order across
+  a couple of edits earlier in the session — the content is all accurate,
+  just not perfectly sequential. Not fixing retroactively since it doesn't
+  affect the engine; treat timestamps within each entry as authoritative.)
+
+## Hour 14 continued — 2026-08-27 04:46
+
+- Dispatched an independent code-review subagent over search.cpp, eval.cpp,
+  board.cpp, movegen.cpp, tt.cpp, bitboard.cpp and uci.cpp specifically
+  hunting for correctness bugs in the interactions between the many search
+  techniques added this session — the kind of thing A/B win-rate testing can
+  miss, since a subtly-wrong result can still net-positive an A/B test while
+  being wrong in specific rare positions. **This paid off immediately** — it
+  found two real, previously-unknown bugs:
+  1. An interrupted depth-1 search fell back to an arbitrary
+     first-generated root move (not even the best partial progress) because
+     `negamax` unconditionally discards its accumulated best-move-so-far on
+     `stopFlag`, and the existing `depth > 1` guard in `go()` didn't cover
+     depth 1. Reachable in severe time pressure — exactly what this
+     benchmark's 10+0.1 control can produce. Fixed with a root-best-so-far
+     tracker updated as each root move's comparison completes, which
+     survives the call returning early.
+  2. stdout writes from the search thread (`info`/`bestmove`) and the reader
+     thread (`readyok`, answering `isready` "at any time, including during a
+     search" per the UCI spec) were unsynchronized and could interleave into
+     an unparseable line. Fixed with a shared `g_coutMutex` around every UCI
+     stdout write.
+  Both fixed, verified (compliance, perft, a targeted isready-during-search
+  interleaving test — 5/5 clean, self-play stress test, 240-game A/B: 47.9%,
+  neutral as expected since these only bite in rare edge cases — zero
+  regression). Promoted to `final/`. This validates the strategy shift away
+  from more speculative feature-hunting: a careful review found real value
+  that rapid A/B iteration structurally couldn't have caught.
+- ~11.8 hours remain. Given how productive that was, continuing with
+  targeted verification work rather than rushing back to speculative
+  feature ideas.
