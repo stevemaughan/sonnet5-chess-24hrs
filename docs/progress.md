@@ -460,6 +460,19 @@ to be a search bottleneck later.
 - ~15.4 hours remain. Reliability remains the standout result: 0 abnormal
   terminations against any real opponent since the time-safety hardening
   fix (800+ combined Stash games across stash-25/33/21 re-tests).
+
+## Hour 11 — 2026-08-27 01:52
+
+- Search-side ideas are on a good run: added an extra LMR reduction tier for
+  very late moves (legalCount>16): 52.1% over 240 games, promoted. Then
+  added Internal Iterative Reduction (IIR — cheaply shave a ply off non-PV
+  nodes with no TT move at all, complementing the existing full-research IID
+  for PV nodes): 54.2% over 240 games, one of the stronger single-change
+  wins this session. Both zero abnormal terminations. Promoted to `final/`.
+- ~15.1 hours remain. Plan: one more Stash re-anchor to check the cumulative
+  trend, then continue at the same measured pace (small idea -> stress test
+  -> A/B match -> promote or revert), watching for when returns clearly flatten
+  out so remaining time can shift toward tuning/polish/final verification.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
