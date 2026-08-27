@@ -934,6 +934,30 @@ to be a search bottleneck later.
   post-malus games vs that opponent) before settling the number, since
   this result meaningfully changes the session's final Elo estimate and
   is worth the extra ~15 minutes to pin down properly.
+- Second stash-25 batch: 300 games, **22.33%, estimate ~2724** — notably
+  higher than the first batch (18.83% -> ~2686), closing most of the gap.
+  Combined stash-25 sample (600 games post-malus): 123.5/600 = 20.58% ->
+  combined estimate **~2705**. **Resolution: the discrepancy was normal
+  300-game sampling variance, not a real contradiction.** All three
+  independent signals now point the same direction: internal mirror A/B
+  (+84 Elo, LOS 100%), stash-21 (+58 points vs the pre-malus baseline on
+  the same opponent), and the now-larger stash-25 combined sample (~2705,
+  up from the pre-malus ~2694). **Consolidated post-malus estimate:
+  ~2710-2750, call it ~2725** as a single central number — a genuine,
+  meaningful gain over the pre-malus ~2690 baseline, though the internal
+  A/B's +84 figure was likely somewhat optimistic relative to real
+  cross-engine transfer (expected, as noted earlier). Not chasing further
+  precision here — six 300-game-class matches in the last hour is already
+  a solid, proportionate amount of confirmatory testing for a single
+  change, and diminishing returns apply to measurement time too.
+  All reliability clean throughout (zero issues on our side across all
+  three post-malus matches, 900 games).
+- ~6.3 hours remain. Session total now: ~2350 (Hour 1) -> **~2725**
+  (current best estimate), a strong result. `final/` holds the history-
+  malus build, extensively validated. Returning to the wind-down plan:
+  hold steady, watch for any further clearly-low-risk opportunities
+  without forcing them, and begin the true final lock-down with a large
+  margin before 16:32.
 
 ## Hour 17 — 2026-08-27 07:17
 
