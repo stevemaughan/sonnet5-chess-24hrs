@@ -377,6 +377,39 @@ to be a search bottleneck later.
   for final build verification, a sanity match at the real time control, and
   installing the final `final/` build — per the rules' own guidance not to
   start anything that can't be finished and verified.
+
+## Hour 8 — 2026-08-26 23:38
+
+- Tried a "backward pawn" eval penalty (classic technique). 49.2% over 240
+  games — neutral, reverted; not worth the added complexity for zero
+  measured benefit.
+- Broader Stash-ladder check: stash-30 (~3170 CCRL), 200 games, **6.8%
+  score** -> estimate ~2715, consistent with the stash-20/21 brackets
+  (~2685-2715 range now converging nicely across three rungs). But this
+  batch also had **1 "Black's connection stalls" abandoned game — this time
+  against a real Stash opponent, under conditions I'd been treating as
+  clean** (single background match, no foreground compiles running). That
+  breaks the "self-play-only" theory from earlier and needed to be taken
+  more seriously than an isolated self-play stall.
+- Response: hardened time-safety defensively rather than chasing an exact
+  root cause I can't reliably reproduce on demand. Tightened the search's
+  time-check sampling from every 2048 nodes to every 256 (negligible NPS
+  cost — `std::chrono::steady_clock::now()` is cheap — but caps any
+  worst-case overshoot between checks much tighter regardless of cause), and
+  raised the default Move Overhead safety margin 40ms -> 60ms. Validated
+  with a 300-game match against stash-25: **300/300 normal terminations**,
+  no strength change. Promoted to `final/` immediately given the direct
+  reliability motivation — this is exactly the kind of fix that matters more
+  than any Elo gain, since a single time loss in the real rating match is a
+  guaranteed full point lost. Will keep watching every subsequent test batch
+  for further stalls as an ongoing signal, but this is a principled,
+  well-justified mitigation regardless of whether it fully eliminates a rare
+  edge case or just makes it much rarer.
+- Elo estimate: ~2690-2715 across three Stash brackets (20/21/30), consistent
+  and stable. ~16.4 hours remain.
+- Next: continue with cheap, well-established eval refinements at a
+  measured pace; keep an explicit eye on reliability in every test batch
+  from here on, not just strength.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
