@@ -360,9 +360,9 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
 
         // Futility pruning: at shallow depth, a quiet non-checking move that can't
         // plausibly close the gap to alpha given the static eval is skipped outright.
-        static const int FutilityMargin[7] = { 0, 120, 180, 260, 340, 420, 500 };
+        static const int FutilityMargin[9] = { 0, 120, 180, 260, 340, 420, 500, 580, 660 };
         if (!inCheck && !pvNode && isQuiet && !givesCheck && legalCount > 1 &&
-            depth >= 1 && depth <= 6 && alpha > -MATE_IN_MAX &&
+            depth >= 1 && depth <= 8 && alpha > -MATE_IN_MAX &&
             staticEval + FutilityMargin[depth] <= alpha) {
             popHistoryKey();
             b.unmakeMove(m, u);
@@ -372,9 +372,9 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         // Late move pruning: at shallow depth, once enough quiet moves have
         // already been tried without improving alpha, further quiets are
         // very unlikely to matter — skip them outright regardless of eval.
-        static const int LMPThreshold[7] = { 0, 6, 9, 13, 18, 24, 30 };
+        static const int LMPThreshold[9] = { 0, 6, 9, 13, 18, 24, 30, 37, 45 };
         if (!inCheck && !pvNode && isQuiet && !givesCheck && legalCount > 1 &&
-            depth >= 1 && depth <= 6 && alpha > -MATE_IN_MAX &&
+            depth >= 1 && depth <= 8 && alpha > -MATE_IN_MAX &&
             legalCount > LMPThreshold[depth]) {
             popHistoryKey();
             b.unmakeMove(m, u);
