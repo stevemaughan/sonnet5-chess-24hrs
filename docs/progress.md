@@ -523,6 +523,19 @@ to be a search bottleneck later.
   final verification phase. ~13.4 hours remain — plenty of runway either
   way, so this is a considered pacing choice, not a sign of running out of
   time.
+- Ran a single combined gauntlet match (`final/` vs stash-20/21/25/30/33
+  simultaneously, 80 games each, mixed together at concurrency 8): **400/400
+  normal terminations** — the most comprehensive reliability check yet, all
+  five opponents at once, zero issues. Scores: stash20 68.8% (~2647),
+  stash21 35.6% (~2607, notably lower than the ~44-47% seen in three earlier
+  larger isolated matches — likely just this smaller 80-game sample plus
+  possibly more timing variance from many different engine types running
+  concurrently; weighting the larger isolated samples more), stash25 12.5%
+  (~2602), stash30 3.1% (~2572), stash33 2.5% (~2650, noisy at this extreme
+  a gap). **Settled current estimate: ~2600-2650**, consistent across every
+  measurement approach this session. This is the number to carry forward
+  unless a future change clearly moves it.
+- ~13.2 hours remain.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
