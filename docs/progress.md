@@ -616,3 +616,37 @@ to be a search bottleneck later.
 - ~11.8 hours remain. Given how productive that was, continuing with
   targeted verification work rather than rushing back to speculative
   feature ideas.
+
+## Hour 15 — 2026-08-27 05:20
+
+- Second review found something even more significant: a **deterministic
+  hang**. `Search::go()` unconditionally cleared `stopFlag` at entry; if
+  `stop`/`quit` was processed by the out-of-band reader thread for a `go`
+  that was still sitting in the command queue (not yet started), the stop
+  signal was silently erased the moment that `go` actually began — and for
+  `go infinite` (no time bound at all) nothing would ever set it again,
+  since the reader thread exits right after handling `quit`. **Verified the
+  OLD build hung 30/30 times** on `position startpos` / `go infinite` /
+  `quit` piped in immediately (a realistic pattern for any burst-written
+  input, not just a contrived stress case). Fixed with a go-enqueued /
+  go-dequeued counter pair: the reader thread records which "go" a stop
+  applies to at the moment of the request, and `go()` only clears the flag
+  if no stop applies to its own index — closing the race properly instead
+  of papering over it. **New build: 0/30 on the same scenario**, plus
+  verified normal wtime/btime+stop races and ordinary play unaffected
+  (240-game A/B: 46.8%, neutral as expected — this is a correctness fix,
+  not a strength change). Promoted to `final/`.
+- Two independent review passes, four real bugs found and fixed (the
+  interrupted-depth-1 fallback and stdout race from pass one; the stdout
+  race was already covered; this go-infinite hang and the earlier
+  interrupted-depth-1 issue from pass one). This has been by a wide margin
+  the highest-value activity this session relative to time spent — a single
+  ~6-minute agent review found and let me fix a bug that could have caused
+  an outright hung game in the real rating match, something no amount of
+  A/B strength testing would have surfaced (it doesn't affect normal
+  time-bounded play at all, only `go infinite`, which is a required but
+  rarely-exercised protocol path).
+- ~11.2 hours remain. Plan: one more review pass on a different angle
+  (numerical correctness in eval — overflow/sign issues, TT collision
+  handling), then a final comprehensive Stash-ladder + reliability sweep,
+  then transition to the reserved final-verification phase.
