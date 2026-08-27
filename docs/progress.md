@@ -536,6 +536,24 @@ to be a search bottleneck later.
   measurement approach this session. This is the number to carry forward
   unless a future change clearly moves it.
 - ~13.2 hours remain.
+
+## Hour 14 — 2026-08-27 04:15
+
+- Tried two more ideas: per-piece-type weighted mobility (queens naturally
+  have much higher raw mobility than knights, so a flat multiplier over/
+  under-values them) — 49.0% over 240 games, neutral, reverted. Then tried
+  simplifying quiescence pruning by dropping the crude delta-margin capture
+  filter now that SEE-based pruning exists (seemed redundant) — 46.7%, a
+  real regression, reverted; turns out the cheap delta filter earns its keep
+  by skipping many hopeless captures before the pricier SEE call is needed.
+- That's **five non-wins in a row** now (weighted mobility, delta-filter
+  removal, RFP/SEE depth extension, connected rooks, singular extensions).
+  Genuinely committing to a strategy shift rather than continuing rapid-fire
+  small experiments: the next stretch goes to a careful code-review pass
+  for correctness/robustness (not new features), informed by everything
+  learned this session, before deciding whether any more feature ideas are
+  worth trying. ~12.3 hours remain — comfortably enough to do this properly
+  and still have a large reserve for final verification.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
