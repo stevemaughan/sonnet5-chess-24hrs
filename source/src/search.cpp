@@ -27,7 +27,7 @@ static uint64_t nodeCount = 0;
 static clock_t_::time_point startTime;
 static int64_t softMs = -1, hardMs = -1;
 static bool limited = false;
-static int moveOverheadMs = 40;
+static int moveOverheadMs = 60;
 
 static Move killers[MAX_PLY][2];
 static int historyTable[12][64];
@@ -191,7 +191,7 @@ static bool hasNonPawnMaterial(const Board& b, Color c) {
 
 static int quiescence(Board& b, int alpha, int beta, int ply) {
     nodeCount++;
-    if ((nodeCount & 2047) == 0) checkTime();
+    if ((nodeCount & 255) == 0) checkTime();
     if (stopFlag.load(std::memory_order_relaxed)) return 0;
     if (ply >= MAX_PLY - 1) return evaluate(b);
 
@@ -248,7 +248,7 @@ static int quiescence(Board& b, int alpha, int beta, int ply) {
 
 static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNull) {
     nodeCount++;
-    if ((nodeCount & 2047) == 0) checkTime();
+    if ((nodeCount & 255) == 0) checkTime();
     if (stopFlag.load(std::memory_order_relaxed)) return 0;
 
     bool pvNode = (beta - alpha) > 1;
