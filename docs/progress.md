@@ -1204,3 +1204,17 @@ to be a search bottleneck later.
   is running dry. Will re-verify the full final checklist against this
   latest build, do a light re-anchor check, then hold steady through to
   the true final lock-down.
+- Re-verified the checklist against the capture-history build (static
+  linking, pathological time controls, `fastchess --compliance` 40/40)
+  — all clean. Light re-anchor vs stash-25: 300 games, **20.33%, estimate
+  ~2703**, consistent with the consolidated ~2705-2751 range from the
+  malus/continuation-history measurements, confirming the build holds its
+  strength. Zero reliability issues.
+- **Session-final Elo estimate: ~2700-2750, call it ~2720-2730** as the
+  single best number — consistent across every recent cross-check.
+  ~4.1 hours remain. `final/` holds the fully-validated build (malus +
+  continuation history + capture history on top of the whole session's
+  prior work). Now entering the genuine steady-state hold: periodic
+  monitoring, no further active experimentation planned barring a
+  compelling low-risk opportunity, heading toward the true final
+  lock-down well before 16:32.
