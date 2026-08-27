@@ -958,6 +958,31 @@ to be a search bottleneck later.
   hold steady, watch for any further clearly-low-risk opportunities
   without forcing them, and begin the true final lock-down with a large
   margin before 16:32.
+- Following the same "missing well-established mechanism" pattern that
+  paid off for the history malus, added **continuation history**: a new
+  `contHistory[parentPiece][parentTo][piece][to]` table (distinct from the
+  existing single-slot counter-move table, which only remembers the one
+  best response per parent context) giving a full per-context score,
+  updated with the same bonus-on-cutoff/malus-on-reject pattern as plain
+  history and folded additively into `scoreMove`'s ordering score. This is
+  one of the most consistently valuable move-ordering techniques in strong
+  engines, used specifically because "what tends to work as a reply to
+  this exact parent move" is a much richer signal than a single stored
+  best response. Validated: compliance 40/40, self-play stress clean (one
+  game ended a few plies early via a natural checkmate before the script's
+  move cap — expected, not an error), **240-game A/B: 52.92% score,
+  +20.3 Elo (+/-30.5), LOS 90.5%**, zero abnormal terminations. A real,
+  solid win (smaller than the malus change but consistent with it being a
+  genuinely fruitful area). Promoted to `final/`.
+- ~6.0 hours remain. Two big, well-established move-ordering mechanisms
+  found and added this stretch (malus, continuation history) — this is
+  now a meaningfully stronger build than the one measured at ~2725, though
+  not yet re-anchored against Stash (that measurement round already took
+  ~45 minutes for the malus change alone; will fold a fresh anchor into
+  the upcoming final-verification confirmation match rather than repeat
+  the full multi-opponent cross-check cycle again, given time is better
+  spent finishing the verification phase properly with a comfortable
+  margin left).
 
 ## Hour 17 — 2026-08-27 07:17
 

@@ -58,6 +58,14 @@ static int moveOverheadMs = 60;
 static Move killers[MAX_PLY][2];
 static int historyTable[12][64];
 static Move counterMoveTable[12][64];
+// Continuation history: indexed by [parent piece][parent to-square][this
+// piece][this to-square]. Distinct from counterMoveTable (which stores only
+// a single best-response move per parent context) — this tracks a full
+// score per (parent-context, candidate-move) pair, the same way plain
+// history tracks a score per move alone, giving a much richer ordering
+// signal for "what tends to work after this specific reply" beyond just
+// the single best-known response.
+static int contHistory[12][64][12][64];
 static Move searchStackMove[MAX_PLY];
 // Tracks the best root move found so far during the CURRENT depth's root
 // search, updated as soon as a root move's full comparison completes (not
@@ -194,15 +202,18 @@ static int scoreMove(const Board& b, Move m, Move ttMove, int ply) {
     if (isPromo(m)) return 900000 + PieceVal[promoType(m)];
     if (m == killers[ply][0]) return 800000;
     if (m == killers[ply][1]) return 799000;
+    int contScore = 0;
     if (ply > 0) {
         Move parentMove = searchStackMove[ply - 1];
         if (parentMove != NO_MOVE) {
             Piece parentPiece = b.pieceOn[moveTo(parentMove)];
             if (counterMoveTable[parentPiece][moveTo(parentMove)] == m) return 750000;
+            Piece p = b.pieceOn[moveFrom(m)];
+            contScore = contHistory[parentPiece][moveTo(parentMove)][p][moveTo(m)];
         }
     }
     Piece p = b.pieceOn[moveFrom(m)];
-    return historyTable[p][moveTo(m)];
+    return historyTable[p][moveTo(m)] + contScore;
 }
 
 static Move pickNextMove(MoveList& list, int* scores, int from) {
@@ -463,23 +474,35 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
                                 for (int sq = 0; sq < 64; sq++)
                                     historyTable[pp][sq] >>= 1;
                         }
+                        Piece parentPiece = NO_PIECE;
+                        int parentTo = -1;
                         if (ply > 0) {
                             Move parentMove = searchStackMove[ply - 1];
                             if (parentMove != NO_MOVE) {
-                                Piece parentPiece = b.pieceOn[moveTo(parentMove)];
-                                counterMoveTable[parentPiece][moveTo(parentMove)] = m;
+                                parentPiece = b.pieceOn[moveTo(parentMove)];
+                                parentTo = moveTo(parentMove);
+                                counterMoveTable[parentPiece][parentTo] = m;
+                                int& ch = contHistory[parentPiece][parentTo][p][moveTo(m)];
+                                ch += depth * depth;
+                                if (ch > (1 << 20)) ch = (1 << 20);
                             }
                         }
                         // History malus: quiet moves tried before the one that
                         // caused this cutoff turned out to be worse than it, so
                         // penalize them too — this sharpens the ordering signal
-                        // beyond only ever rewarding the winner.
+                        // beyond only ever rewarding the winner. Mirrored into
+                        // continuation history when a parent context exists.
                         for (int qi = 0; qi < quietsTriedCount - 1; qi++) {
                             Move qm = quietsTried[qi];
                             Piece qp = b.pieceOn[moveFrom(qm)];
                             int& hq = historyTable[qp][moveTo(qm)];
                             hq -= depth * depth;
                             if (hq < -(1 << 20)) hq = -(1 << 20);
+                            if (parentPiece != NO_PIECE) {
+                                int& chq = contHistory[parentPiece][parentTo][qp][moveTo(qm)];
+                                chq -= depth * depth;
+                                if (chq < -(1 << 20)) chq = -(1 << 20);
+                            }
                         }
                     }
                     break;
@@ -548,6 +571,7 @@ static void printInfo(int depth, int score, Board& board) {
 void Search::newGame() {
     g_tt.clear();
     memset(historyTable, 0, sizeof(historyTable));
+    memset(contHistory, 0, sizeof(contHistory));
     memset(killers, 0, sizeof(killers));
     memset(counterMoveTable, 0, sizeof(counterMoveTable));
     gameHistoryLen = 0;
