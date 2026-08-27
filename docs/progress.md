@@ -358,6 +358,25 @@ to be a search bottleneck later.
 - Next: try open-files-near-the-king as a king-safety refinement (penalize
   semi-open/open files adjacent to our king beyond just the direct pawn
   shield, since that's what actually lets rooks/queens get at the king).
+
+## Hour 7 — 2026-08-26 22:40
+
+- Added the open-files-near-king penalty described above. 51.5% over 240
+  games, zero abnormal terminations. Promoted to `final/`.
+- Session running total: ~2350 -> ~2690+ Elo estimate over about 6 hours,
+  with a clean reliability record against every real (non-self-play)
+  opponent tested. `final/` is always kept at the last verified-good build;
+  every promotion this session passed fastchess --compliance, perft, a
+  realistic-clock self-play stress test, and a >=240-game internal A/B match
+  before being installed.
+- ~16.9 hours remain. Plan for the rest of the run: keep doing small,
+  cheaply-verified improvements (eval refinements have the better hit rate
+  this session; search-parameter tweaks have not paid off recently so
+  approaching those more sparingly), periodic Stash re-anchoring every few
+  rounds, and explicitly reserving real time near the end (last ~2 hours)
+  for final build verification, a sanity match at the real time control, and
+  installing the final `final/` build — per the rules' own guidance not to
+  start anything that can't be finished and verified.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
