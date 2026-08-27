@@ -1263,3 +1263,46 @@ to be a search bottleneck later.
   Elo** over the 24-hour run. Remaining ~3.3 hours: light periodic
   monitoring only, no further changes to `final/` planned. README will be
   written after the deadline per the rules, consuming no engine time.
+
+## Hour 24 — 2026-08-27 16:29 (session close)
+
+- The 24-hour window has elapsed (start 2026-08-26T16:32:02-04:00,
+  deadline 2026-08-27T16:32:02-04:00). Final state check at close: `git
+  status` clean, `final/Sonnet5chess24hrs.exe` unchanged since the
+  definitive verification pass logged above, 69 commits total. No changes
+  were made to `final/` during the last ~3.3 hours of monitoring —
+  exactly as planned, since the build was locked in early with a large,
+  deliberate safety margin.
+- **`final/Sonnet5chess24hrs.exe` is the entry.** It is the build with:
+  full search stack (negamax/PVS, TT, null-move pruning, LMR, RFP,
+  futility pruning, razoring, SEE-based capture pruning and ordering, IID,
+  IIR, LMP, aspiration windows, forced-move depth cap, best-move-stability
+  time extension), full evaluation (tapered material+PST, mobility, pawn
+  structure incl. protected/connected-aware passed pawns, king safety,
+  outposts, bishop pair, contempt, tempo), and move ordering with TT move,
+  MVV-LVA/SEE captures plus a learned capture-history tiebreaker, killers,
+  counter-moves, history with malus, and continuation history. Verified
+  standalone (no MinGW runtime DLL dependency), built with
+  `-O3 -flto -march=x86-64-v3 -static` (x86-64-v3 baseline, never
+  `-march=native`), passes the full perft suite and `fastchess
+  --compliance`, and handles every pathological UCI time-control input
+  tested cleanly.
+- **Final session summary:** ~2350 Elo (Hour 1) -> **~2720-2730 Elo**
+  (final, best estimate), roughly **+375 Elo** gained over the 24 hours.
+  Reliability was essentially perfect for the entire second half of the
+  session (many thousands of combined test games, zero abnormal
+  terminations attributable to this engine since the Hour 15 correctness
+  fixes). Four independent code-review passes found and fixed two real
+  bugs (an interrupted-depth-1 fallback and a deterministic `go
+  infinite`+`quit` hang) that A/B strength testing structurally could not
+  have caught. The single largest strength gain came late in the session
+  from two well-established move-ordering mechanisms that had been
+  missing entirely (history malus, +84 Elo internally; continuation
+  history, +20 Elo internally) — a reminder that even after apparent
+  diminishing returns, a genuinely missing standard mechanism can still be
+  worth more than many small parameter tweaks.
+- This is the final entry in this log. Per the rules, `README.md` will be
+  written next, entirely after this 24-hour window, consuming no engine
+  time — covering the architecture, full build-time timeline, an Elo-by-
+  hour table derived from this log, all assumptions made, and the
+  estimated-strength evidence summarized above. Session complete.
