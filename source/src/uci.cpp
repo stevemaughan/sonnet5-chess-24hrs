@@ -96,6 +96,7 @@ static void cmdSetOption(std::istringstream& iss) {
 }
 
 static void printUCI() {
+    std::lock_guard<std::mutex> lk(g_coutMutex);
     std::cout << "id name " << ENGINE_NAME << "\n";
     std::cout << "id author " << ENGINE_AUTHOR << "\n";
     std::cout << "option name Hash type spin default 256 min 1 max 16384\n";
@@ -117,6 +118,7 @@ static void readerThreadFunc() {
         if (cmd == "stop") {
             g_search.requestStop();
         } else if (cmd == "isready") {
+            std::lock_guard<std::mutex> lk(g_coutMutex);
             std::cout << "readyok\n" << std::flush;
         } else if (cmd == "quit") {
             g_search.requestStop();

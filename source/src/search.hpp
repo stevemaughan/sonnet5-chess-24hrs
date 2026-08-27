@@ -4,6 +4,14 @@
 #include "tt.hpp"
 #include <atomic>
 #include <cstdint>
+#include <mutex>
+
+// Guards all stdout writes: the search thread prints "info"/"bestmove" lines
+// while the reader thread can print "readyok" concurrently (isready must work
+// "at any time, including during a search" per the UCI spec) — without this,
+// their output could interleave into a line neither a GUI nor a test harness
+// can parse.
+extern std::mutex g_coutMutex;
 
 struct SearchLimits {
     // NOT_SET means the GUI didn't send this field at all. A GUI can legitimately

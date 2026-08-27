@@ -8,6 +8,7 @@
 #include <sstream>
 
 Search g_search;
+std::mutex g_coutMutex;
 
 using clock_t_ = std::chrono::steady_clock;
 
@@ -33,6 +34,12 @@ static Move killers[MAX_PLY][2];
 static int historyTable[12][64];
 static Move counterMoveTable[12][64];
 static Move searchStackMove[MAX_PLY];
+// Tracks the best root move found so far during the CURRENT depth's root
+// search, updated as soon as a root move's full comparison completes (not
+// just when the whole iteration finishes) — this lets go() recover a
+// meaningful move if a depth-1 iteration itself gets interrupted mid-loop,
+// instead of falling back to an arbitrary first-generated move.
+static Move rootBestMoveSoFar = NO_MOVE;
 
 static inline void pushHistoryKey(uint64_t h) { if (historyTop < MAX_HIST) historyStack[historyTop++] = h; }
 static inline void popHistoryKey() { if (historyTop > 0) historyTop--; }
@@ -413,6 +420,7 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         if (score > bestScore) {
             bestScore = score;
             bestMove = m;
+            if (ply == 0) rootBestMoveSoFar = m;
             if (score > alpha) {
                 alpha = score;
                 if (alpha >= beta) {
@@ -491,7 +499,10 @@ static void printInfo(int depth, int score, Board& board) {
     oss << " nodes " << nodeCount << " nps " << nps << " time " << ms
         << " hashfull " << g_tt.hashfull()
         << " pv " << extractPV(board, depth);
-    std::cout << oss.str() << "\n" << std::flush;
+    {
+        std::lock_guard<std::mutex> lk(g_coutMutex);
+        std::cout << oss.str() << "\n" << std::flush;
+    }
 }
 
 void Search::newGame() {
@@ -526,7 +537,10 @@ void Search::go(Board board, const SearchLimits& limits) {
     generateLegal(board, rootMoves);
 
     if (rootMoves.count == 0) {
-        std::cout << "bestmove 0000\n" << std::flush;
+        {
+            std::lock_guard<std::mutex> lk(g_coutMutex);
+            std::cout << "bestmove 0000\n" << std::flush;
+        }
         searchingFlag.store(false, std::memory_order_relaxed);
         return;
     }
@@ -537,6 +551,7 @@ void Search::go(Board board, const SearchLimits& limits) {
     int stableDepths = 0;
 
     for (int depth = 1; depth <= maxDepth; depth++) {
+        rootBestMoveSoFar = NO_MOVE;
         int score;
         if (depth >= 4) {
             int window = 25;
@@ -558,7 +573,14 @@ void Search::go(Board board, const SearchLimits& limits) {
         bestScore = score;
         TTEntry tte;
         Move newBest = bestMove;
-        if (g_tt.probe(board.hash, tte) && tte.move != NO_MOVE) newBest = tte.move;
+        if (g_tt.probe(board.hash, tte) && tte.move != NO_MOVE) {
+            newBest = tte.move;
+        } else if (depth == 1 && rootBestMoveSoFar != NO_MOVE) {
+            // depth-1 itself got interrupted before it could store to TT —
+            // fall back to whatever partial root progress was made rather
+            // than an arbitrary first-generated move.
+            newBest = rootBestMoveSoFar;
+        }
         stableDepths = (newBest == bestMove) ? stableDepths + 1 : 0;
         bestMove = newBest;
         printInfo(depth, bestScore, board);
@@ -577,6 +599,9 @@ void Search::go(Board board, const SearchLimits& limits) {
         }
     }
 
-    std::cout << "bestmove " << moveToUCI(bestMove) << "\n" << std::flush;
+    {
+        std::lock_guard<std::mutex> lk(g_coutMutex);
+        std::cout << "bestmove " << moveToUCI(bestMove) << "\n" << std::flush;
+    }
     searchingFlag.store(false, std::memory_order_relaxed);
 }
