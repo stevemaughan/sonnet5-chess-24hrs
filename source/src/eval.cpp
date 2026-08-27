@@ -214,6 +214,15 @@ static void pieceBonuses(const Board& b, Color us, int& mg, int& eg) {
                 mg += 18; eg += 10;
             }
         }
+        Bitboard bishopsForOutpost = b.pieceBB[makePiece(us, BISHOP)];
+        while (bishopsForOutpost) {
+            int sq = popLsb(bishopsForOutpost);
+            int rank = rankOf(sq);
+            bool advanced = (us == WHITE) ? (rank >= 3 && rank <= 5) : (rank >= 2 && rank <= 4);
+            if (advanced && (ownPawnAttacks & squareBB(sq)) && !(enemyPawnAttacks & squareBB(sq))) {
+                mg += 12; eg += 6;
+            }
+        }
     }
 
     Bitboard rooks = b.pieceBB[makePiece(us, ROOK)];
