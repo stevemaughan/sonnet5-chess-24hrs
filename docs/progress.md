@@ -697,3 +697,29 @@ to be a search bottleneck later.
   well-reasoned feature attempt, periodic Stash re-anchoring), then a
   deliberate transition to final-build verification with a comfortable
   multi-hour margin before the 24-hour mark.
+
+## Hour 16 continued — 2026-08-27 06:28
+
+- Wrote `source/build.ps1`, a reproducible one-command build script (for the
+  eventual README and for anyone rebuilding from source), and while testing
+  it found a real machine-specific hazard worth recording: **legacy
+  `powershell.exe`** (as opposed to `pwsh` or bash) resolves an ancient
+  Anaconda-bundled MinGW `g++.exe` (GCC 5.3.0, no C++20 support) *ahead of*
+  the correct scoop-installed GCC 15.2.0 on PATH (confirmed via
+  `where.exe g++.exe` listing both, wrong one first). A naive `g++ ...`
+  invocation from that shell would silently build with the wrong, ancient
+  compiler and fail (or worse, partially succeed with different semantics).
+  Fixed by hardcoding the absolute scoop g++ path in the script with a
+  bare-`g++` fallback. Verified: builds cleanly via legacy `powershell.exe`,
+  passes `fastchess --compliance` (40/40), and a 3-game realistic-clock
+  self-play stress test on the resulting binary came back clean (all 3
+  games completed normally, 140 plies each). This was a documentation/
+  tooling side-task, not a strength change, so no A/B match — build
+  correctness was verified directly instead. Committed.
+- Launched a fourth independent code-review pass, this time focused
+  exclusively on time management (`computeTimeBudget`, `checkTime`, the
+  forced-move depth cap, and their interactions) — the single most
+  consequential subsystem for this benchmark's tc=10+0.1 control with an
+  undisclosed timemargin, and one that's been touched several times this
+  session. Result pending, will log next.
+- ~10.1 hours remain.
