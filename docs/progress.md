@@ -756,3 +756,33 @@ to be a search bottleneck later.
   last full gauntlet (Hour 15, ~2680 estimate), then decide between a couple
   more targeted feature attempts vs. moving toward the final-verification
   phase, keeping a comfortable multi-hour reserve either way.
+- **Tooling discovery**: launching `fastchess.exe` from the Bash tool (Git
+  Bash) started failing with "Fatal; <engine> engine startup failure:
+  process creation failed" — reproduced 3 times in a row, alternating which
+  side failed (mine, then stash21, then stash21 again), at concurrency 10,
+  4, and even 1. Confirmed this is specific to Git-Bash-as-parent-process
+  (not a real engine defect): the exact same command via the PowerShell tool
+  ran cleanly. This matches the same signature seen earlier when
+  `fastchess --compliance` failed under Bash but passed under PowerShell.
+  Root cause not fully pinned down (plausibly something about how Git
+  Bash's process/handle inheritance interacts with fastchess's own child
+  spawning), but the workaround is simple and now adopted for the rest of
+  the session: **always launch fastchess.exe via the PowerShell tool, never
+  Bash.** This is a dev-environment/tooling quirk only — irrelevant to the
+  actual rating harness, which will invoke fastchess directly, not through
+  either of these interactive shells.
+- Re-anchor result (PowerShell, concurrency 10, 200 rounds/400 games vs
+  stash-21): **47.62% score (190.5/400), Elo -16.5 vs stash21** ->
+  estimate ~2693, consistent with the last three stash-21 measurements this
+  session (44.2%-51.0%) and confirming **no regression** from the
+  forced-move depth cap or the cosmetic Move-Overhead-label fix since Hour
+  15's gauntlet. **Reliability: 400/400 games with zero timeouts or crashes
+  on our side** — all 3 timeouts and the 1 crash reported belonged to
+  stash21. This is the cleanest large-sample reliability result of the
+  session.
+- ~9.5 hours remain. Current best estimate holds at **~2680-2695**. Plan:
+  given feature-hunting has been mostly flat for the last several hours
+  (returns clearly diminishing) and all four review passes are done, start
+  weighing the shift toward the reserved final-verification phase — a
+  couple more low-risk, well-reasoned attempts are still worth trying given
+  the remaining runway, but not open-ended speculative search anymore.
