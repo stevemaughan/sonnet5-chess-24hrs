@@ -1125,3 +1125,34 @@ to be a search bottleneck later.
   confirmation, a final compliance pass, and a last real-time-control
   sanity match, with ~7.8 hours of margin (far more than needed) before
   installing the true final build.
+
+## Hour 18 — 2026-08-27 10:47
+
+- Considered one further "improving heuristic" idea (scale RFP/futility/LMP
+  pruning aggressiveness by whether static eval is trending up or down
+  across own moves) — a well-established technique, but on reflection its
+  actual implementation requires picking specific margin magnitudes, which
+  is squarely the *parameter-tuning* pattern that failed repeatedly this
+  session (0/4ish), unlike malus/continuation-history which were pure,
+  unambiguous additive signals. Decided not to force it; stopping the
+  search-feature hunt here on a strong, high-confidence note instead of
+  reaching for a lower-confidence idea just to fill time.
+- Final re-anchor vs stash-21 with the malus+continuation-history build:
+  300 games, **55.83%, +40.7 Elo (+/-34.3), LOS 99.1%** -> ~2751 —
+  essentially identical to the malus-only measurement, suggesting
+  continuation history's incremental effect (clearly real in the more
+  sensitive internal A/B) is within this particular sample's noise floor
+  layered on top of an already-improved baseline. Not a concern; the
+  internal A/B already gave solid standalone evidence for it. 1 timeout
+  on stash21's own side, zero issues on ours.
+- **Final consolidated Elo estimate: ~2725-2751, call it ~2730-2740.**
+  Session total: ~2350 (Hour 1) -> ~2730+ (now), a gain of roughly 380+
+  Elo over the run, achieved through: core search/eval fundamentals (Hours
+  1-9), a run of correctness/protocol fixes from independent code review
+  (Hours 14-15), incremental eval refinements (protected passed pawns,
+  contempt, forced-move depth cap), a TT-replacement correctness fix, and
+  finally two well-established move-ordering mechanisms found missing
+  (history malus, continuation history) that together accounted for a
+  large share of the late-session gains. ~5.7 hours remain — now
+  genuinely committing to the wind-down: final verification confirmation,
+  light monitoring, and the true final lock-down well before 16:32.
