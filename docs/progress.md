@@ -442,6 +442,24 @@ to be a search bottleneck later.
 - ~15.9 hours remain. Elo estimate holds at ~2650-2715 depending on bracket;
   will keep alternating small verified improvements with periodic Stash
   re-anchoring and reliability spot-checks.
+
+## Hour 10 — 2026-08-27 01:00
+
+- Extended futility pruning and LMP depth range from 6 to 8 (matching RFP's
+  existing depth<=7 cap). 52.7% over 240 games; one abandoned game in that
+  batch, but at 1/240 (~0.4%) it matches the already-characterized
+  self-play-only baseline rate rather than signaling a new issue. Promoted.
+- Re-anchored vs stash-21: 200 games, 44.2%, **200/200 normal
+  terminations**. This point estimate (~2670) is a bit below the last two
+  stash-21 measurements (46.0%, 46.8% -> ~2685-2690), but well within normal
+  200-game sampling noise (~+/-7 points) — not treating this as evidence of
+  a regression on its own, especially since every individual change this
+  session was validated with its own 240-game A/B before promotion. Will
+  keep watching the trend across future re-anchors rather than react to one
+  noisy sample.
+- ~15.4 hours remain. Reliability remains the standout result: 0 abnormal
+  terminations against any real opponent since the time-safety hardening
+  fix (800+ combined Stash games across stash-25/33/21 re-tests).
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
