@@ -66,6 +66,12 @@ static Move counterMoveTable[12][64];
 // signal for "what tends to work after this specific reply" beyond just
 // the single best-known response.
 static int contHistory[12][64][12][64];
+// Capture history, indexed by [attacker piece][to-square]. MVV-LVA/SEE
+// already order captures well by material outcome; this adds a learned
+// tiebreaker among captures of similar material value (kept deliberately
+// small relative to the MVV-LVA score spread — see scoreCapture — so it
+// only refines ordering, never overrides the material-based hierarchy).
+static int captureHistory[12][64];
 static Move searchStackMove[MAX_PLY];
 // Tracks the best root move found so far during the CURRENT depth's root
 // search, updated as soon as a root move's full comparison completes (not
@@ -143,6 +149,8 @@ static int scoreCapture(const Board& b, Move m) {
     PieceType attacker = typeOf(b.pieceOn[moveFrom(m)]);
     int score = 1000000 + PieceVal[victim] * 10 - PieceVal[attacker];
     if (isPromo(m)) score += PieceVal[promoType(m)];
+    Piece ap = b.pieceOn[moveFrom(m)];
+    score += captureHistory[ap][moveTo(m)] / 16;
     return score;
 }
 
@@ -383,10 +391,13 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
     int legalCount = 0;
     Move quietsTried[64];
     int quietsTriedCount = 0;
+    Move capturesTried[64];
+    int capturesTriedCount = 0;
 
     for (int i = 0; i < list.count; i++) {
         Move m = pickNextMove(list, scores, i);
         bool isQuiet = !isCapture(m) && !isPromo(m);
+        bool isPlainCapture = isCapture(m);
 
         Undo u;
         b.makeMove(m, u);
@@ -456,6 +467,7 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         if (stopFlag.load(std::memory_order_relaxed)) return 0;
 
         if (isQuiet && quietsTriedCount < 64) quietsTried[quietsTriedCount++] = m;
+        if (isPlainCapture && capturesTriedCount < 64) capturesTried[capturesTriedCount++] = m;
 
         if (score > bestScore) {
             bestScore = score;
@@ -503,6 +515,24 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
                                 chq -= depth * depth;
                                 if (chq < -(1 << 20)) chq = -(1 << 20);
                             }
+                        }
+                    } else if (isPlainCapture) {
+                        // Capture history: a much smaller-magnitude bonus/malus
+                        // than plain history (see scoreCapture's /16 scaling) —
+                        // MVV-LVA/SEE already order captures well by material,
+                        // this only refines ordering among similarly-valued
+                        // captures, never overriding the material hierarchy.
+                        static const int CAP_CLAMP = 1 << 14;
+                        Piece ap = b.pieceOn[moveFrom(m)];
+                        int& ch = captureHistory[ap][moveTo(m)];
+                        ch += depth * depth;
+                        if (ch > CAP_CLAMP) ch = CAP_CLAMP;
+                        for (int ci = 0; ci < capturesTriedCount - 1; ci++) {
+                            Move cm = capturesTried[ci];
+                            Piece cp = b.pieceOn[moveFrom(cm)];
+                            int& chc = captureHistory[cp][moveTo(cm)];
+                            chc -= depth * depth;
+                            if (chc < -CAP_CLAMP) chc = -CAP_CLAMP;
                         }
                     }
                     break;
@@ -572,6 +602,7 @@ void Search::newGame() {
     g_tt.clear();
     memset(historyTable, 0, sizeof(historyTable));
     memset(contHistory, 0, sizeof(contHistory));
+    memset(captureHistory, 0, sizeof(captureHistory));
     memset(killers, 0, sizeof(killers));
     memset(counterMoveTable, 0, sizeof(counterMoveTable));
     gameHistoryLen = 0;

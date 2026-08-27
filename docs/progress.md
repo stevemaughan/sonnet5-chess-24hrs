@@ -1175,3 +1175,32 @@ to be a search bottleneck later.
   unhurried final lock-down (this same checklist run one more time,
   literally last, plus updating `docs/progress.md`'s final entry) with a
   comfortable margin before the 16:32 deadline.
+
+## Hour 19 — 2026-08-27 12:09
+
+- One more idea in the same additive-mechanism family as the two big wins:
+  **capture history**, a small `captureHistory[attackerPiece][to]` table
+  giving captures a learned tiebreaker on top of the existing static
+  MVV-LVA/SEE ordering (deliberately scaled down — divided by 16 and
+  clamped to +/-16384 raw, so it can only nudge ordering among
+  similarly-valued captures, never override the material-based hierarchy
+  that MVV-LVA/SEE already provide). Updated with the same bonus-on-
+  cutoff/malus-on-reject pattern as the other two history tables.
+  Validated: compliance 40/40, self-play stress clean (one game again
+  ended a few plies early via natural checkmate, expected), **240-game
+  A/B: 52.08% score, +14.5 Elo (+/-34.4), LOS 79.7%** — positive but
+  weaker/less certain than the previous two wins (captures already had a
+  strong static ordering signal, so less room for a learned tiebreaker to
+  add). Zero reliability issues. Accepted on the positive point estimate +
+  sound low-risk reasoning (correctness-safe, order-only, matches this
+  session's established bar for standard techniques without requiring
+  airtight statistical significance) rather than spending more test time
+  chasing a tighter confidence interval. Promoted to `final/`.
+- ~4.4 hours remain. This closes out the additive-move-ordering-mechanism
+  vein for this session — three found and kept (malus, continuation
+  history, capture history), a strong stretch. Not chasing a fourth;
+  moving decisively into the wind-down now given the diminishing marginal
+  win size (84 -> 20 -> 14.5 Elo) is itself a signal this particular vein
+  is running dry. Will re-verify the full final checklist against this
+  latest build, do a light re-anchor check, then hold steady through to
+  the true final lock-down.
