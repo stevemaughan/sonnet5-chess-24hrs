@@ -877,6 +877,33 @@ to be a search bottleneck later.
   occasional low-risk opportunities if any surface, lighter-weight
   confirmatory checks, and a deliberate, unhurried true final lock-down
   in the last 1-2 hours before the 16:32 deadline.
+- Checked the existing king-safety attack-units code (already a fairly
+  complete CPW-style implementation: per-piece-type weights, 2-attacker
+  gate, quadratic scaling, capped) — nothing obviously missing worth
+  touching without a tuner. Checked the history heuristic instead and
+  found a genuine gap: only the cutoff move ever got a *positive* update;
+  quiet moves tried and rejected earlier in the same node never got any
+  corresponding *negative* update ("history malus"), a well-established,
+  purely move-ordering technique (no correctness risk — it only changes
+  search order, not legality or returned scores) used in strong engines
+  precisely because it sharpens the ordering signal far more than
+  positive-only reinforcement.
+- Implemented it: track the quiet moves tried so far at each node in a
+  small per-node array; when a quiet move causes a beta cutoff, apply the
+  existing `+depth*depth` bonus to it as before, and now also apply a
+  `-depth*depth` malus (clamped, mirroring the existing overflow guard) to
+  every other quiet move tried and rejected before it at that node.
+  Validated: compliance 40/40, self-play stress clean, **240-game A/B:
+  61.88% score (148.5/240), +84.1 Elo (+/-31.6), LOS 100%** — by a wide
+  margin the single biggest win of the entire session. Zero abnormal
+  terminations. Promoted to `final/` immediately.
+- ~7.1 hours remain. This is a strong reminder not to fully close the door
+  on search-side ideas just because recent *parameter-tuning* attempts had
+  a poor hit rate — a genuinely missing, well-established *mechanism*
+  (not just a magnitude tweak) was still there to find. Given the size of
+  this result, re-anchoring against Stash again is worthwhile before
+  settling back into steady-state; will do a couple of confirmatory
+  matches next, then reassess the remaining-time plan.
 
 ## Hour 17 — 2026-08-27 07:17
 

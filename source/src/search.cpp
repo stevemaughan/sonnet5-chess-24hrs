@@ -370,6 +370,8 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
     Move bestMove = NO_MOVE;
     int origAlpha = alpha;
     int legalCount = 0;
+    Move quietsTried[64];
+    int quietsTriedCount = 0;
 
     for (int i = 0; i < list.count; i++) {
         Move m = pickNextMove(list, scores, i);
@@ -442,6 +444,8 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
 
         if (stopFlag.load(std::memory_order_relaxed)) return 0;
 
+        if (isQuiet && quietsTriedCount < 64) quietsTried[quietsTriedCount++] = m;
+
         if (score > bestScore) {
             bestScore = score;
             bestMove = m;
@@ -465,6 +469,17 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
                                 Piece parentPiece = b.pieceOn[moveTo(parentMove)];
                                 counterMoveTable[parentPiece][moveTo(parentMove)] = m;
                             }
+                        }
+                        // History malus: quiet moves tried before the one that
+                        // caused this cutoff turned out to be worse than it, so
+                        // penalize them too — this sharpens the ordering signal
+                        // beyond only ever rewarding the winner.
+                        for (int qi = 0; qi < quietsTriedCount - 1; qi++) {
+                            Move qm = quietsTried[qi];
+                            Piece qp = b.pieceOn[moveFrom(qm)];
+                            int& hq = historyTable[qp][moveTo(qm)];
+                            hq -= depth * depth;
+                            if (hq < -(1 << 20)) hq = -(1 << 20);
                         }
                     }
                     break;
