@@ -661,3 +661,19 @@ to be a search bottleneck later.
   non-correctness observation noted (TT replacement lets a shallow EXACT
   entry evict a deeper one at the same slot — costs some TT effectiveness,
   not correctness; not worth changing this late without dedicated testing).
+- Ran a fresh comprehensive gauntlet (500 games, all 5 Stash versions mixed
+  together) on the post-fix build: **499/500 normal, 1 time forfeit (Stash's
+  own clock, not ours)** — effectively perfect reliability. Scores: stash20
+  74.0% (~2692), stash21 51.0% (~2717), stash25 17.0% (~2665), stash30 4.5%
+  (~2640), stash33 3.0% (~2682). These cluster much more tightly than the
+  first gauntlet (2600-2650 spread) and sit noticeably higher — **updated
+  estimate: ~2650-2720, call it ~2680 as a single number**. Plausibly real
+  continued improvement compounding (eval terms + LMP/IIR/extra-LMR-tier +
+  the two correctness fixes), plausibly partly just less noise at 100
+  games/matchup vs 80 before; treating the higher, tighter number as the
+  current best estimate either way since it's consistent across all five
+  independent opponents.
+- ~11 hours remain. Plan: continue alternating a review pass or two more
+  with a handful of fresh feature attempts now that the codebase has had
+  four real bugs shaken out, then transition to the reserved final-build
+  phase with good margin.
