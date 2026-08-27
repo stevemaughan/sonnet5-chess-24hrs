@@ -578,7 +578,14 @@ void Search::go(Board board, const SearchLimits& limits) {
 
     Move bestMove = rootMoves.moves[0];
     int bestScore = 0;
-    int maxDepth = (limits.depth > 0) ? limits.depth : (MAX_PLY - 1);
+    // A forced move (only one legal reply, e.g. escaping check with a single
+    // flight square) can't change no matter how deep we search it — cap the
+    // depth in that case so we don't burn the position's time budget on a
+    // decision that was never in question, banking it for a position that
+    // actually has one to make. Only applies to time-limited searches; an
+    // explicit "go depth N" or "go infinite" is respected as asked.
+    bool forcedMove = (rootMoves.count == 1 && limited);
+    int maxDepth = (limits.depth > 0) ? limits.depth : (forcedMove ? 6 : (MAX_PLY - 1));
     int stableDepths = 0;
 
     for (int depth = 1; depth <= maxDepth; depth++) {
