@@ -897,3 +897,34 @@ to be a search bottleneck later.
   positive). Now genuinely beginning the wind-down: one more broad
   reliability/strength check is reasonable, then committing to final
   verification with several hours of comfortable reserve.
+- Attempted a combined 5-opponent gauntlet (`-tournament gauntlet`, mine vs
+  stash20/21/25/30/33 simultaneously) for one consolidated final number,
+  but it hit the same "process creation failed" error seen earlier —
+  **this time even via PowerShell**, at both concurrency 10 and 6, always
+  failing within the first couple of games while several *distinct*
+  Stash binaries were being launched near-simultaneously for the first
+  time. This narrows the earlier hypothesis: it's specifically launching
+  many distinct, not-recently-run executables at once (plausibly Defender
+  scanning each unfamiliar binary on first launch) rather than Git Bash
+  parentage as first suspected — the two-engine matches (mine + one
+  familiar, already-scanned opponent) have never failed via PowerShell
+  all session. **Abandoned the combined-gauntlet approach** (not worth
+  more debugging time this late) and fell back to the proven sequential
+  single-opponent pattern instead.
+- Re-anchored vs stash-30 (~3170 CCRL) with the current (post-TT-fix)
+  build: 300 games, **5.5% score, estimate ~2676** — consistent with the
+  session's other stash30 measurement (Hour 8, 6.8% -> ~2715; noisy at
+  this extreme a gap as noted before, but the same ballpark). **300/300
+  clean, zero reliability issues.**
+- ~7.8 hours remain. Final consolidated estimate across this session's
+  measurements: **~2680-2710**, call it **~2690** as the single best
+  number, consistent across five independent Stash rungs (20/21/25/30/33)
+  and multiple points in the session. Reliability has been essentially
+  perfect for the entire second half of the session (many hundreds of
+  consecutive clean games). This is a good, well-evidenced place to
+  commit fully to the reserved final-verification phase now — stopping
+  further feature/search experimentation and moving to: identity/UCI
+  option confirmation, static-linking verification, optimisation-flag
+  confirmation, a final compliance pass, and a last real-time-control
+  sanity match, with ~7.8 hours of margin (far more than needed) before
+  installing the true final build.
