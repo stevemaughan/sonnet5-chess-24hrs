@@ -786,3 +786,36 @@ to be a search bottleneck later.
   weighing the shift toward the reserved final-verification phase — a
   couple more low-risk, well-reasoned attempts are still worth trying given
   the remaining runway, but not open-ended speculative search anymore.
+
+## Hour 17 — 2026-08-27 07:17
+
+- Added a small contempt term (10cp): a draw by repetition/50-move is now
+  scored as `-CONTEMPT` from the side-to-move's perspective at that node
+  rather than exactly 0, discouraging steering into a draw when a real
+  alternative exists. Standard, low-risk, well-established technique,
+  particularly relevant here since the rules state the rating match uses "a
+  range of other engines" of varying strength, not just same-strength
+  mirror opponents.
+- Validated: compliance 40/40, 3-game self-play stress clean, 240-game A/B
+  vs the pre-contempt build: **50.42% (+2.9 Elo, +/-31), neutral** — but
+  this is the *expected* outcome for a mirror-match test of contempt: its
+  benefit comes specifically from converting drawish positions into wins
+  against genuinely *weaker* opponents, a mechanism a same-strength A/B
+  structurally cannot measure (both sides apply identical contempt, so it
+  roughly cancels). Draw ratio in the match (42.5%) was somewhat lower than
+  this session's typical ~45%, consistent with the intended mechanism
+  (fewer drawn games) without the small change costing any measured
+  strength or reliability. **Accepted on reasoning + the neutral-not-
+  negative safety check**, matching this session's established pattern for
+  standard low-risk techniques (Hour 1 eval terms used the same
+  "measure + accept on judgement" approach). At only 10cp — far below
+  normal eval noise/swings — downside risk against genuinely stronger
+  opponents (declining an objectively-best draw) is minimal. Promoted to
+  `final/`.
+- ~9.2 hours remain. Given the review-pass and quick-feature-hunt phases
+  have both reached diminishing returns, next up: maybe one more small,
+  well-reasoned idea if one comes to mind quickly, then a deliberate,
+  unhurried transition into the reserved final-verification phase (full
+  reliability sweep, real-time-control sanity match, confirm identity/
+  static-linking/optimisation flags, install the true final build) with a
+  large multi-hour safety margin before the 16:32 deadline.

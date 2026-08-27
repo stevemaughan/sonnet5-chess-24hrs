@@ -14,6 +14,13 @@ using clock_t_ = std::chrono::steady_clock;
 
 static const int PieceVal[6] = { 100, 320, 330, 500, 900, 20000 };
 
+// Small contempt: a draw (repetition/50-move) is scored as slightly worse
+// than dead-even for the side to move at that node, rather than exactly 0.
+// This discourages steering into a draw when an alternative exists, without
+// materially affecting play in genuinely balanced or lost positions (the
+// margin is far below normal eval noise). Standard, low-risk technique.
+static const int CONTEMPT = 10;
+
 static const int MAX_HIST = 1400;
 static uint64_t gameHistoryStack[MAX_HIST];
 static int gameHistoryLen = 0;
@@ -279,7 +286,7 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
     bool pvNode = (beta - alpha) > 1;
 
     if (ply > 0) {
-        if (isRepetition(b)) return 0;
+        if (isRepetition(b)) return -CONTEMPT;
         if (ply >= MAX_PLY - 1) return evaluate(b);
         alpha = std::max(alpha, -MATE_SCORE + ply);
         beta = std::min(beta, MATE_SCORE - ply);
