@@ -277,3 +277,35 @@ to be a search bottleneck later.
   change with an internal A/B match plus periodic Stash re-anchoring, and
   keep the "no foreground work during background matches" + self-play
   stress-test discipline.
+
+## Hour 5 — 2026-08-26 20:19
+
+- Not every idea pays off, and that's fine: tried safe mobility (exclude
+  enemy-pawn-covered squares from the mobility count) and an "easy move"
+  time-saving heuristic (commit early after 6+ stable iterations) together
+  first — 49.6% over 240 games, essentially a wash. Bisected by testing safe
+  mobility alone — 46.9% over 240 games, actually a small regression.
+  **Reverted both** rather than spend more time chasing a fix; reliability
+  was fine throughout (0 abnormal terminations in both tests), this was
+  purely a strength judgement call. Lesson: mobility/time-management
+  heuristics that are "standard" in other engines aren't guaranteed wins
+  here without this engine's specific eval/search calibration, and aren't
+  worth defending once the A/B test says no.
+- Added a flat tempo bonus (+10cp for the side to move) and a knight-outpost
+  bonus (pawn-defended knight, unreachable by enemy pawns, on ranks 3-5).
+  Both cheap, standard, low-risk. Validated: 51.5% over 240 games, zero
+  abnormal terminations — a real but modest gain, smaller than earlier
+  rounds. Promoted to `final/`.
+- Observation: the size of each round's measured improvement has been
+  shrinking (66% -> 56% -> 51.5%) as expected — the biggest, most obviously
+  missing pieces (search pruning, core eval terms) are now in place, so
+  returns are diminishing per feature. ~19 hours remain; plan is a few more
+  rounds of well-established, cheap eval/search additions (bishop outposts,
+  maybe a trapped-piece penalty), then a session of lightly tuning the
+  constants that were only ever reasoned from typical published ranges
+  (LMR/null-move/futility/RFP/razoring margins), interspersed with periodic
+  Stash re-anchoring, and reserving real time at the end for final build
+  verification per the rules.
+- Elo estimate: still ~2600-2650 (last direct Stash measurement), plus the
+  small confirmed gains since then — treat as **~2650-2680**, not yet
+  re-measured against Stash.
