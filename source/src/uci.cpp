@@ -100,7 +100,7 @@ static void printUCI() {
     std::cout << "id name " << ENGINE_NAME << "\n";
     std::cout << "id author " << ENGINE_AUTHOR << "\n";
     std::cout << "option name Hash type spin default 256 min 1 max 16384\n";
-    std::cout << "option name Move Overhead type spin default 40 min 0 max 5000\n";
+    std::cout << "option name Move Overhead type spin default 60 min 0 max 5000\n";
     std::cout << "uciok\n" << std::flush;
 }
 

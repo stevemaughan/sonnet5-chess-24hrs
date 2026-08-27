@@ -723,3 +723,36 @@ to be a search bottleneck later.
   undisclosed timemargin, and one that's been touched several times this
   session. Result pending, will log next.
 - ~10.1 hours remain.
+
+## Hour 16 continued — 2026-08-27 06:34
+
+- Fourth review pass result: **clean, no bugs found.** Hand-traced
+  `computeTimeBudget` across the full realistic myTime range (10000 down to
+  1) — `hardMs >= softMs` always holds via explicit clamps, the emergency
+  `myTime<200` branch only ever tightens via `std::min` so it can't
+  "un-tighten" the normal path's clamps. `movestogo` (never actually sent at
+  this control) traced safe even in the `movestogo=1` extreme — doesn't
+  overspend, just conservative. Forced-move depth cap confirmed to leave no
+  state bleed between successive `go` calls (nodeCount/startTime/budget all
+  recomputed unconditionally at the top of every `go`). `checkTime()`'s
+  256-node sampling is comfortably sub-millisecond at realistic search
+  speeds, and singular-extension code (tried and reverted earlier this
+  session) is confirmed fully absent — no leftover state. One cosmetic-only
+  finding: the UCI option list advertised `Move Overhead` default as `40`
+  while the actual runtime default was `60` (label/reality mismatch, no
+  behavioral bug since fastchess never sets this option). Fixed the label to
+  match (`uci.cpp`), rebuilt, verified `fastchess --compliance` 40/40 and a
+  3-game self-play stress test clean, promoted to `final/` directly (purely
+  cosmetic string fix, no A/B needed).
+- Four independent review passes now complete this session: 2 found real
+  bugs (interrupted-depth-1 fallback + stdout race; the go-infinite hang),
+  1 came back clean on numerical/TT correctness, 1 came back clean on time
+  management (this one) bar the cosmetic label. Given time management and
+  numerical/TT correctness both came back clean, and the two protocol/race
+  bugs found earlier are fixed and verified, treating the review-pass
+  strategy as having run its course for now — diminishing returns on a fifth
+  pass. ~10 hours remain.
+- Next: a Stash re-anchor to confirm no regression from any change since the
+  last full gauntlet (Hour 15, ~2680 estimate), then decide between a couple
+  more targeted feature attempts vs. moving toward the final-verification
+  phase, keeping a comfortable multi-hour reserve either way.
