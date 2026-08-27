@@ -309,6 +309,29 @@ to be a search bottleneck later.
 - Elo estimate: still ~2600-2650 (last direct Stash measurement), plus the
   small confirmed gains since then — treat as **~2650-2680**, not yet
   re-measured against Stash.
+
+## Hour 6 — 2026-08-26 21:23
+
+- Added a bishop-outpost eval term (same pattern as the knight outpost:
+  pawn-defended, unreachable by enemy pawns, ranks 3-5), smaller bonus than
+  the knight version since bishops benefit less from a single strong square.
+  51.5% over 240 games, zero abnormal terminations. Promoted to `final/`.
+  Deliberately kept this round to a single small, low-risk change (rather
+  than bundling with quiescence-search changes I was considering) given the
+  LMR formula scare last hour — staying conservative on search-path changes
+  for now, eval-only tweaks are lower risk.
+- current `final/` feature set: tapered material+PST eval with mobility,
+  passed/isolated/doubled pawns + passed-pawn king tropism + rook-behind-
+  passed-pawn, bishop pair, knight/bishop outposts, rook on open/semi-open
+  file, king safety (shield + attack pressure), tempo bonus; negamax/PVS
+  with TT, null-move pruning, LMR, reverse futility pruning, futility
+  pruning, razoring, SEE-based capture pruning, IID, countermove/killer/
+  history move ordering, aspiration windows, best-move-stability time
+  extension. ~2650-2680 estimated Elo, extensively reliability-tested.
+- Next: try a couple of conservative, numbers-only parameter adjustments
+  (null-move reduction R, futility/RFP margins) rather than more control-flow
+  changes for a bit, since those are lower-risk to validate quickly; then
+  re-anchor against Stash again to check overall progress this session.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
