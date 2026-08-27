@@ -388,7 +388,7 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         } else {
             int reduction = 0;
             if (isQuiet && extension == 0 && depth >= 3 && legalCount > 3 && !inCheck) {
-                reduction = 1 + (legalCount > 8 ? 1 : 0) + (depth > 8 ? 1 : 0);
+                reduction = 1 + (legalCount > 8 ? 1 : 0) + (legalCount > 16 ? 1 : 0) + (depth > 8 ? 1 : 0);
                 if (reduction > newDepth - 1) reduction = newDepth > 0 ? newDepth - 1 : 0;
                 if (reduction < 0) reduction = 0;
             }
