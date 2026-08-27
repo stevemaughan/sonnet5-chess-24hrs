@@ -332,6 +332,32 @@ to be a search bottleneck later.
   (null-move reduction R, futility/RFP margins) rather than more control-flow
   changes for a bit, since those are lower-risk to validate quickly; then
   re-anchor against Stash again to check overall progress this session.
+
+## Hour 6 continued — 2026-08-26 21:50
+
+- Three search-side experiments in a row came back negative and were
+  reverted: null-move R 3->4 base (47.5% over 240 games, plus another
+  isolated self-play stall consistent with the already-characterized base
+  rate), and a proper quiescence-search-with-checks implementation (limited
+  to the first qsearch ply, carefully built and stress-tested — 0 reliability
+  issues, but 44.4% over 240 games, a clear strength regression: the extra
+  branching costs more depth than the occasional caught tactic is worth at
+  this engine's current calibration). All reverted; `final/` unchanged.
+  Useful signal: my originally-reasoned search constants were already
+  decently calibrated, and eval-side additions have a much better hit rate
+  this session (4/6 positive) than search-parameter guesses (0/3 positive)
+  — shifting remaining effort back toward eval refinements and away from
+  more speculative search tuning for now.
+- Re-anchored against stash-21: 200 games, **46.8% score, 200/200 normal
+  terminations** — closely matches the earlier 46.0% measurement (estimate
+  ~2685-2690), confirming both the strength estimate and the measurement
+  methodology are stable. Net over the whole session so far: roughly
+  2350 -> 2690, about +340 Elo in under 6 hours, with a clean reliability
+  record against every real opponent tested (0 abnormal terminations in
+  1000+ combined Stash games across the session).
+- Next: try open-files-near-the-king as a king-safety refinement (penalize
+  semi-open/open files adjacent to our king beyond just the direct pawn
+  shield, since that's what actually lets rooks/queens get at the king).
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
