@@ -1218,3 +1218,15 @@ to be a search bottleneck later.
   monitoring, no further active experimentation planned barring a
   compelling low-risk opportunity, heading toward the true final
   lock-down well before 16:32.
+- One more data point for the README's evidence section: re-anchored the
+  final build vs stash-30, 300 games, **5.67%, estimate ~2681** —
+  consistent (within normal noise) with the prior stash30 measurements
+  this session (~2676 pre-malus, ~2715 at Hour 8). Zero reliability
+  issues. Current-build ladder now covers stash21 (~2751), stash25
+  (~2703), stash30 (~2681), all converging comfortably within the
+  **~2700-2750** final estimate range.
+- ~3.3 hours remain. Beginning the true final lock-down now: one last full
+  verification pass (identity, static linking, perft, compliance,
+  pathological time controls, repo cleanliness), confirming `final/` is
+  exactly the intended build, then holding it completely fixed through to
+  the deadline with only light periodic confirmation checks.
