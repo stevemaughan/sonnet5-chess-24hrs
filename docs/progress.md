@@ -650,3 +650,14 @@ to be a search bottleneck later.
   (numerical correctness in eval — overflow/sign issues, TT collision
   handling), then a final comprehensive Stash-ladder + reliability sweep,
   then transition to the reserved final-verification phase.
+- Third review pass (numerical correctness in eval, TT/Zobrist hashing,
+  SEE array bounds) came back **clean** — no bugs found, with concrete
+  worked numbers for each area checked (int16_t TT score range margins,
+  eval accumulator overflow headroom, SEE's `gain[32]` bound being
+  mathematically exact given max 32 pieces on a board, Zobrist incremental
+  update traced term-by-term against computeHash()). A clean pass is exactly
+  as useful as one that finds something — it says these areas, which are
+  foundational to every single search node, are solid. One minor
+  non-correctness observation noted (TT replacement lets a shallow EXACT
+  entry evict a deeper one at the same slot — costs some TT effectiveness,
+  not correctness; not worth changing this late without dedicated testing).
