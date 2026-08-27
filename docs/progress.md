@@ -819,3 +819,15 @@ to be a search bottleneck later.
   reliability sweep, real-time-control sanity match, confirm identity/
   static-linking/optimisation flags, install the true final build) with a
   large multi-hour safety margin before the 16:32 deadline.
+- Added a protected-passed-pawn bonus (extra mg/eg credit when a passed
+  pawn is itself defended by another own pawn — much harder to stop since
+  the defender must be dealt with first), a natural extension of the
+  existing passed-pawn scaling/king-tropism/rook-behind-passer terms.
+  Validated: compliance 40/40, self-play stress clean, **240-game A/B:
+  54.37% score, +30.5 Elo (+/-27.7), LOS 98.5%** — a real, clean win, the
+  best single-change result since the forced-move depth cap. Zero abnormal
+  terminations. Promoted to `final/`.
+- ~8.9 hours remain. Encouraging sign that eval refinements can still find
+  real value even after several non-wins — worth one or two more targeted
+  attempts before committing fully to the final-verification phase, given
+  the large remaining margin.

@@ -145,6 +145,8 @@ static int chebyshevDist(int sq1, int sq2) {
     return std::max(std::abs(df), std::abs(dr));
 }
 
+static Bitboard pawnAttacksBB(Bitboard pawns, Color c);
+
 static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
     Color them = ~us;
     Bitboard ownPawns = b.pieceBB[makePiece(us, PAWN)];
@@ -179,6 +181,10 @@ static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
                 bool behind = (us == WHITE) ? (rankOf(rsq) < rank) : (rankOf(rsq) > rank);
                 if (behind) { mg += 10; eg += 20; }
             }
+
+            // A passed pawn defended by another pawn is much harder to stop
+            // than one that isn't (the defender must be dealt with first).
+            if (pawnAttacksBB(ownPawns, us) & squareBB(sq)) { mg += 8; eg += 15; }
         }
         if (!(AdjFiles[f] & ownPawns)) { mg -= 12; eg -= 18; }
     }
