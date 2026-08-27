@@ -1230,3 +1230,36 @@ to be a search bottleneck later.
   pathological time controls, repo cleanliness), confirming `final/` is
   exactly the intended build, then holding it completely fixed through to
   the deadline with only light periodic confirmation checks.
+- **Definitive final verification pass, all clean:**
+  - Identity: `id name Sonnet 5 chess 24hrs`, `id author Sonnet 5`, exact.
+  - Static linking: `objdump -p` shows only `KERNEL32.dll`/`msvcrt.dll`;
+    confirmed twice more with scoop/MinGW/gcc stripped from PATH — once
+    via a quick one-shot pipe (hit the known, already-diagnosed EOF-
+    defensive-stop artifact, expected and harmless) and once via a proper
+    persistent-pipe `.NET Process` test showing a completely normal,
+    correct 15-ply real-time search with sensible moves.
+  - Perft: fresh rebuild, 126/126 positions, startpos depth 6 exact.
+  - `fastchess --compliance`: 40/40.
+  - Pathological time controls (`wtime`/`btime`/`movetime` at 0, negative,
+    and `wtime 1 btime 1`) and `go infinite`+`quit` (3/3): all correct.
+  - `final/` contains only `Sonnet5chess24hrs.exe`; git status fully
+    clean; all work committed.
+  - `final/Sonnet5chess24hrs.exe` is exactly the build validated by the
+    capture-history A/B match and the stash-21/25/30 re-anchors above —
+    no drift between what was measured and what's installed.
+  - **This is the entry.** `final/Sonnet5chess24hrs.exe` will not be
+    touched again barring a critical issue found in remaining checks.
+- Session-final estimated strength: **~2700-2750 Elo, call it ~2720-2730**
+  as a single central number, based on hundreds of games each against
+  stash-21 (~2751), stash-25 (~2703-2705), stash-30 (~2676-2681), and
+  earlier stash-20/33 brackets, all converging within this range, plus a
+  consistently strong internal A/B record for every promoted change.
+  Reliability: essentially perfect for the entire second half of the
+  session — many thousands of combined test games with only Stash's own
+  occasional timeouts/crashes recorded, zero attributable to this engine,
+  across every measurement this session including the definitive final
+  build.
+- Session total: ~2350 (Hour 1) -> ~2720-2730 (final), roughly **+375
+  Elo** over the 24-hour run. Remaining ~3.3 hours: light periodic
+  monitoring only, no further changes to `final/` planned. README will be
+  written after the deadline per the rules, consuming no engine time.
