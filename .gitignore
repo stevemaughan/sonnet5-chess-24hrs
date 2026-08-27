@@ -9,3 +9,4 @@ source/tests/*.pgn
 *.log
 *.tmp
 docs/*.epd.out
+config.json
