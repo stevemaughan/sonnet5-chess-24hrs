@@ -845,6 +845,38 @@ to be a search bottleneck later.
   the exact build command/flags one more time end-to-end and do a last
   short real-time-control sanity match on the truly final artifact before
   considering this phase complete.
+- Repo/build sanity: `.gitignore` correctly scoped (resources/, build
+  artifacts, PGNs, config.json excluded; `final/Sonnet5chess24hrs.exe`
+  explicitly un-ignored so it's tracked); `git status` clean, 57 commits;
+  all 20 source files present and accounted for in `source/src/`;
+  `build.ps1`'s flags (`-std=c++20 -O3 -flto -march=x86-64-v3 -static
+  -lpthread`) match the spec exactly (x86-64-v3 baseline, never
+  `-march=native`, full optimisation with LTO, static linking).
+- With verification checks all clean and substantial time still remaining
+  (~7.5h), rather than force more speculative eval ideas at this point
+  (the well-established low-risk candidates are largely exhausted per
+  this session's own evidence), completed the Stash-ladder sweep with the
+  current (post-TT-fix) final build: **stash-33 (~3286 CCRL), 300 games,
+  1.67% score** -> nominal estimate ~2578, but this is **very noisy at
+  such an extreme gap** (consistent with the Hour 9 measurement at a
+  similar 1.8%) — logistic Elo estimates lose precision near 0%/100%
+  scores, so this rung is directionally consistent but carries much less
+  weight than the mid-ladder measurements. **300/300 clean, zero
+  reliability issues.**
+- Full current-build ladder summary: stash21 ~2693 (400 games), stash25
+  ~2694 (300 games), stash30 ~2676 (300 games), stash33 ~2578-noisy (300
+  games). The two most statistically solid mid-ladder measurements
+  converge tightly on **~2693-2694**; taking **~2690** as the single
+  best-evidence final estimate, consistent with every measurement
+  approach used this session.
+- ~7.4 hours remain. Reliability record for the entire back half of the
+  session (since the Hour 15 correctness fixes): well over 2000 combined
+  test games across self-play and five different Stash opponents, with
+  zero abnormal terminations attributable to this engine. Plan: hold
+  `final/` steady at this verified-good state; spend remaining time on
+  occasional low-risk opportunities if any surface, lighter-weight
+  confirmatory checks, and a deliberate, unhurried true final lock-down
+  in the last 1-2 hours before the 16:32 deadline.
 
 ## Hour 17 — 2026-08-27 07:17
 
