@@ -410,6 +410,38 @@ to be a search bottleneck later.
 - Next: continue with cheap, well-established eval refinements at a
   measured pace; keep an explicit eye on reliability in every test batch
   from here on, not just strength.
+
+## Hour 9 — 2026-08-27 00:39
+
+- stash-33 (~3286 CCRL) bracket, 300 games: 1.8% score (noisy at this
+  extreme a gap, but directionally consistent), **300/300 normal
+  terminations** — second consecutive 300-game batch with zero reliability
+  issues since the time-safety hardening fix, 600 combined. Good sign, will
+  keep watching.
+- Rook-on-7th-rank eval term: 47.3% over 240 games, neutral/negative,
+  reverted (third eval idea in a row to not pan out, after backward pawns —
+  the easy eval wins do seem to be drying up).
+- Tried PGO (profile-guided optimization) as a free-speed idea explicitly
+  allowed by the rules. The `-fprofile-generate` instrumented build
+  **segfaulted** on one specific test position that the normal `-O3` build
+  handles perfectly (verified 5/5 clean runs on the exact same position with
+  `final/`). This has the same signature as the earlier threading heisenbug
+  — a real underlying issue whose visible symptom depends on exact code
+  generation/instrumentation — but chasing it would risk repeating that
+  multi-hour investigation for a purely optional speed optimization.
+  **Decision: abandoned PGO entirely**, verified the shipped `-O3` build is
+  unaffected, and moved on. Not every optional idea is worth the time even
+  if it might be fixable; this one wasn't close to the risk/reward bar.
+- Added Late Move Pruning (skip remaining quiet moves at shallow depth once
+  enough have been tried, by move-count alone — complements the existing
+  eval-margin-based futility pruning). Validated: 53.5% over 240 games, zero
+  abnormal terminations. Promoted to `final/`. First search-side win since
+  the null-move/quiescence-checks/LMR-formula losing streak a couple hours
+  ago — worth continuing to try search ideas occasionally, just not
+  exclusively.
+- ~15.9 hours remain. Elo estimate holds at ~2650-2715 depending on bracket;
+  will keep alternating small verified improvements with periodic Stash
+  re-anchoring and reliability spot-checks.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
