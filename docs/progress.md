@@ -481,6 +481,31 @@ to be a search bottleneck later.
   our engine had zero issues in this batch. Estimate from this bracket:
   ~2665, consistent with the broader ~2650-2715 picture.
 - ~14.8 hours remain. Continuing at the same measured pace.
+
+## Hour 12 — 2026-08-27 02:28
+
+- Tried singular extensions (extend the TT move by 1 ply when a reduced-depth
+  search excluding it fails to reach a margin below the TT score, i.e. the
+  TT move looks forced). Implemented carefully (excluded-move plumbing
+  through negamax, verified the "only legal move excluded" edge case
+  degenerates to the correct behavior), stress-tested clean, but the A/B
+  result was 49.2% over 240 games — a wash, and meaningfully more code
+  complexity for zero measured gain at the untuned margin/depth constants
+  used. Reverted; the added complexity isn't worth carrying without a
+  confirmed benefit, and tuning it further would cost more test cycles than
+  it's likely worth given the flat result.
+- Running tally of search-side experiments this session: wins — null-move
+  pruning, LMR, RFP, futility pruning, razoring, SEE pruning, IID, LMP,
+  extended futility/LMP depth range, extra LMR tier, IIR. Losses — steeper
+  null-move R, log-based LMR formula, quiescence-with-checks, singular
+  extensions. Roughly 11-for-4, a healthy hit rate for an engine built from
+  reasoned defaults rather than tuned ones.
+- ~14.6 hours remain. Plan for the next stretch: a couple more cheap ideas
+  if any come to mind, then shift towards broader validation (a longer,
+  multi-opponent match or two) and start budgeting toward the mandatory
+  final-build verification phase in the back half of the remaining time —
+  the rules call for reserving real time at the end for that, not
+  squeezing it in at the last minute.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
