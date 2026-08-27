@@ -22,6 +22,24 @@ static uint64_t historyStack[MAX_HIST];
 static int historyTop = 0;
 
 static std::atomic<bool> stopFlag{false};
+
+// Closes a race between the out-of-band reader thread (handles stop/quit
+// immediately) and the queued "go" the main thread executes: if stop/quit is
+// processed for a "go" that's still sitting in the queue (not yet started),
+// requestStop() sets stopFlag=true, but go() used to unconditionally reset it
+// to false at entry — silently losing the stop request. For a time-bounded
+// search this only delayed the response; for "go infinite" (no time bound at
+// all) it meant the search would run forever with nothing left to ever stop
+// it, since the reader thread has already exited after handling "quit".
+// Fix: track how many "go" lines have been queued (bumped by the reader
+// thread via noteGoQueued(), called before the line is pushed) versus how
+// many have actually started (bumped here in go()); requestStop() records the
+// queued-count snapshot at the moment of the stop, and go() only clears
+// stopFlag if its own dequeue index is past that snapshot — i.e. only if no
+// stop was requested for this specific go or an earlier still-pending one.
+static std::atomic<int> goEnqueuedCount{0};
+static std::atomic<int> goDequeuedCount{0};
+static std::atomic<int> stopAppliesThroughGo{0};
 static std::atomic<bool> searchingFlag{false};
 
 static uint64_t nodeCount = 0;
@@ -517,12 +535,25 @@ void Search::setHashMB(size_t mb) { g_tt.resize(mb); }
 void Search::setMoveOverhead(int ms) { moveOverheadMs = ms; }
 void Search::resetGameHistory() { gameHistoryLen = 0; }
 void Search::pushGameHistory(uint64_t h) { if (gameHistoryLen < MAX_HIST) gameHistoryStack[gameHistoryLen++] = h; }
-void Search::requestStop() { stopFlag.store(true, std::memory_order_relaxed); }
+void Search::requestStop() {
+    stopFlag.store(true, std::memory_order_relaxed);
+    stopAppliesThroughGo.store(goEnqueuedCount.load(std::memory_order_relaxed), std::memory_order_relaxed);
+}
 bool Search::isSearching() const { return searchingFlag.load(std::memory_order_relaxed); }
+void Search::noteGoQueued() { goEnqueuedCount.fetch_add(1, std::memory_order_relaxed); }
 
 void Search::go(Board board, const SearchLimits& limits) {
     searchingFlag.store(true, std::memory_order_relaxed);
-    stopFlag.store(false, std::memory_order_relaxed);
+    int myGoIndex = goDequeuedCount.fetch_add(1, std::memory_order_relaxed) + 1;
+    bool stopAlreadyPendingForThis = myGoIndex <= stopAppliesThroughGo.load(std::memory_order_relaxed);
+    if (!stopAlreadyPendingForThis) {
+        stopFlag.store(false, std::memory_order_relaxed);
+    }
+    // else: a stop/quit raced ahead of this go while it was still queued —
+    // leave stopFlag set so the search below notices within a couple
+    // thousand nodes and returns almost immediately instead of running
+    // unbounded (critical for "go infinite", where nothing else would ever
+    // stop it).
     nodeCount = 0;
     startTime = clock_t_::now();
     computeTimeBudget(limits, board.sideToMove);

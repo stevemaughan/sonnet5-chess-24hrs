@@ -131,6 +131,7 @@ static void readerThreadFunc() {
             quitSent = true;
             break;
         } else {
+            if (cmd == "go") g_search.noteGoQueued();
             std::lock_guard<std::mutex> lk(g_queueMutex);
             g_queue.push_back(line);
             g_queueCv.notify_all();

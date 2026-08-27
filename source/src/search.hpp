@@ -40,6 +40,14 @@ public:
     void go(Board board, const SearchLimits& limits);
     void requestStop();
     bool isSearching() const;
+
+    // Call from the reader thread when a "go" line is pushed onto the command
+    // queue (before the main thread has necessarily dequeued/started it). This
+    // lets requestStop() record which "go" a stop/quit applies to, so a stop
+    // that races ahead of a still-queued go isn't silently lost when go()
+    // resets its stop flag — see the comment above g_stopAppliesThroughGo in
+    // search.cpp for the full race this closes.
+    void noteGoQueued();
 };
 
 extern Search g_search;
