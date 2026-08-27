@@ -787,6 +787,65 @@ to be a search bottleneck later.
   couple more low-risk, well-reasoned attempts are still worth trying given
   the remaining runway, but not open-ended speculative search anymore.
 
+## Hour 17 continued — 2026-08-27 08:49 (final verification, part 1)
+
+- Began the reserved final-verification phase in earnest. Checks completed
+  so far, all clean:
+  - Identity confirmed exactly per spec: `id name Sonnet 5 chess 24hrs`,
+    `id author Sonnet 5`.
+  - Standalone/static linking re-verified two ways: `objdump -p` shows only
+    `KERNEL32.dll`/`msvcrt.dll` (system DLLs), and the exe runs correctly
+    with every scoop/MinGW/gcc PATH entry stripped out beforehand.
+  - No `assert()` calls anywhere in source (nothing to worry about being
+    compiled out).
+  - Full perft suite (126/126, all depths incl. startpos depth 6) re-run
+    fresh against the current codebase — movegen hasn't changed since Hour
+    0 but this is a final sanity confirmation, not a re-test of something
+    in doubt.
+  - `fastchess --compliance` 40/40 on the exact currently-committed
+    `final/` build.
+  - Pathological time controls (`wtime 0`, negative wtime/btime, `movetime
+    0`/negative) each return exactly one `bestmove` line promptly; `go
+    infinite` + immediate `quit` returns cleanly 5/5 (the Hour 15 fix
+    holds).
+  - `final/` contains only `Sonnet5chess24hrs.exe`, nothing else; git
+    status clean, all changes committed.
+- **Investigated a scary-looking anomaly, concluded it's a test-harness
+  artifact, not an engine bug.** Piping `uci` / `setoption Hash 256` /
+  `isready` / `position startpos` / `go movetime 500` into the engine via
+  a one-shot Bash `printf ... | exe` showed `readyok` printed *before* the
+  `uci` response, and `go movetime 500` returning after only 1 node at
+  depth 1. Reproduced 3/3 via Bash. But the exact same sequence via a
+  proper persistent-pipe PowerShell `.NET Process` (stdin kept open,
+  timed writes) came back completely correct: right ordering, full
+  depth-16 search in the given 500ms, sensible moves throughout. Root
+  cause found in `uci.cpp`'s reader thread: on stdin EOF with no explicit
+  `quit`, it deliberately calls `requestStop()` and enqueues `quit` — a
+  good, intentional defensive measure so the engine doesn't hang forever
+  if its parent process dies. Bash's one-shot `printf | exe` pipe closes
+  stdin (EOF) essentially immediately after writing, so the reader thread
+  can race ahead and hit that EOF path before the main thread has even
+  finished its startup/first response — something no real UCI client
+  would ever do, since every real GUI/harness (fastchess included, per its
+  own compliance suite passing 40/40 every time this session) keeps stdin
+  open for the life of the engine process and always waits for `uciok`
+  before sending further commands. Cross-checked that
+  `source/tests/selfplay_stress.sh` (used as a validation gate ~10+ times
+  this session) uses a bash `coproc` with a genuinely persistent pipe
+  (`exec {OUT}>&...`), never closing stdin mid-game — confirming its
+  "ALL GAMES OK" results all session were never affected by this. No code
+  change needed; this is correct, deliberate behavior colliding with an
+  unrealistic one-shot test pattern. Noted for the record since the
+  symptom looked alarming at first glance and is worth explaining, not
+  because anything needed fixing. Lesson for the rest of this phase: don't
+  use one-shot `printf | exe` via Bash for UCI behavioral spot-checks —
+  use a persistent-pipe method (PowerShell `.NET Process`, or the existing
+  `coproc`-based script) instead.
+- ~7.7 hours remain. Continuing final verification: still want to confirm
+  the exact build command/flags one more time end-to-end and do a last
+  short real-time-control sanity match on the truly final artifact before
+  considering this phase complete.
+
 ## Hour 17 — 2026-08-27 07:17
 
 - Added a small contempt term (10cp): a draw by repetition/50-move is now
