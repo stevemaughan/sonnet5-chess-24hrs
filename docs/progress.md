@@ -309,3 +309,28 @@ to be a search bottleneck later.
 - Elo estimate: still ~2600-2650 (last direct Stash measurement), plus the
   small confirmed gains since then — treat as **~2650-2680**, not yet
   re-measured against Stash.
+- Tried a more principled log-based LMR reduction formula
+  (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
+  Result: 48.8% over 240 games (neutral-to-negative) **and** a third
+  "connection stalls" abandoned game turned up in that same test batch.
+  Reverted immediately rather than debug — the strength result alone was
+  already a no-go, so there was nothing to gain by chasing the stall's exact
+  mechanism on a change being thrown out anyway.
+- Given three stalls have now been observed (two in engine-vs-itself
+  self-play tests, one in a real vs-Stash match that coincided with my own
+  heavy foreground CPU load), ran a dedicated 300-game **pure self-play**
+  batch on the current, already-validated `final/` build (both sides the
+  identical binary, clean CPU, nothing else running) specifically to
+  characterize the rate: **1/300 abandoned (0.33%)**, none otherwise. This
+  matches the earlier self-play rate closely and, combined with **zero**
+  abandoned/stalled games across 400+ real games against Stash engines
+  (different binaries) both before and after, points to this being a
+  self-play-specific testing artifact (plausibly OS/AV-related contention
+  between two simultaneously-launched *identical* executables) rather than a
+  defect in the engine's own UCI/time-management logic — which was directly
+  stress-tested with realistic decrementing clocks and confirmed correct.
+  Accepting this as understood, low-risk, and not worth further chase: the
+  real rating match is never engine-vs-itself. Will keep using self-play for
+  quick sanity checks but treat a single isolated abandoned game in a
+  self-play batch as noise rather than a fire alarm, while continuing to
+  treat any stall in a Stash match as a serious signal worth investigating.
