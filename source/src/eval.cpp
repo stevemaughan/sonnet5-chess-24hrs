@@ -188,12 +188,33 @@ static void pawnStructure(const Board& b, Color us, int& mg, int& eg) {
     }
 }
 
+static Bitboard pawnAttacksBB(Bitboard pawns, Color c) {
+    return (c == WHITE) ? (shift<NORTH_EAST>(pawns) | shift<NORTH_WEST>(pawns))
+                         : (shift<SOUTH_EAST>(pawns) | shift<SOUTH_WEST>(pawns));
+}
+
 static void pieceBonuses(const Board& b, Color us, int& mg, int& eg) {
     Color them = ~us;
     Bitboard ownPawns = b.pieceBB[makePiece(us, PAWN)];
     Bitboard enemyPawns = b.pieceBB[makePiece(them, PAWN)];
 
     if (popcount(b.pieceBB[makePiece(us, BISHOP)]) >= 2) { mg += 30; eg += 45; }
+
+    // Knight outposts: a knight defended by a pawn, on a square no enemy
+    // pawn can ever challenge, deep in enemy territory, is a long-term asset.
+    {
+        Bitboard ownPawnAttacks = pawnAttacksBB(ownPawns, us);
+        Bitboard enemyPawnAttacks = pawnAttacksBB(enemyPawns, them);
+        Bitboard knights = b.pieceBB[makePiece(us, KNIGHT)];
+        while (knights) {
+            int sq = popLsb(knights);
+            int rank = rankOf(sq);
+            bool advanced = (us == WHITE) ? (rank >= 3 && rank <= 5) : (rank >= 2 && rank <= 4);
+            if (advanced && (ownPawnAttacks & squareBB(sq)) && !(enemyPawnAttacks & squareBB(sq))) {
+                mg += 18; eg += 10;
+            }
+        }
+    }
 
     Bitboard rooks = b.pieceBB[makePiece(us, ROOK)];
     while (rooks) {
@@ -284,5 +305,7 @@ int evaluate(const Board& b) {
     if (phase > MAX_PHASE) phase = MAX_PHASE;
     int score = (mg * phase + eg * (MAX_PHASE - phase)) / MAX_PHASE;
 
-    return (b.sideToMove == WHITE) ? score : -score;
+    // Small bonus for the side to move (having the tempo is a real, if
+    // modest, advantage).
+    return ((b.sideToMove == WHITE) ? score : -score) + 10;
 }

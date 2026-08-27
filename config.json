@@ -32,7 +32,7 @@
         "additional_lines_rgx": [],
         "event_name": "Fastchess Tournament",
         "site": "?",
-        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/cand5_vs_base.pgn",
+        "file": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/tests/cand6_vs_base.pgn",
         "notation": 0,
         "append_file": true,
         "track_nodes": false,
@@ -60,7 +60,7 @@
     },
     "config_name": "config.json",
     "output": 0,
-    "seed": 7413283325919465975,
+    "seed": 11647288584235446255,
     "variant": 0,
     "type": 0,
     "gauntlet_seeds": 1,
@@ -89,9 +89,9 @@
     },
     "engines": [
         {
-            "name": "cand5",
+            "name": "cand6",
             "dir": "",
-            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/cand5.exe",
+            "cmd": "C:/Users/steve/Dropbox/Chess/Development/AI Benchmarks/Sonnet 5/source/build/cand6.exe",
             "args": "",
             "restart": false,
             "options": [
@@ -140,16 +140,16 @@
         }
     ],
     "stats": {
-        "cand5 vs base": {
-            "wins": 62,
-            "losses": 77,
-            "draws": 101,
-            "penta_WW": 7,
-            "penta_WD": 27,
-            "penta_WL": 21,
+        "cand6 vs base": {
+            "wins": 68,
+            "losses": 61,
+            "draws": 111,
+            "penta_WW": 2,
+            "penta_WD": 41,
+            "penta_WL": 23,
             "penta_DD": 21,
-            "penta_LD": 32,
-            "penta_LL": 12
+            "penta_LD": 28,
+            "penta_LL": 5
         }
     }
 }
