@@ -831,3 +831,24 @@ to be a search bottleneck later.
   real value even after several non-wins — worth one or two more targeted
   attempts before committing fully to the final-verification phase, given
   the large remaining margin.
+- Tried a connected/phalanx passed pawns bonus (two own passed pawns on
+  adjacent files, at most one rank apart — distinct from the
+  defended-from-behind case just added, since a phalanx pair supports each
+  other without either diagonally defending the other). Validated:
+  compliance/self-play clean, but **240-game A/B: 48.12%, -13.0 Elo
+  (+/-28.8), LOS 18.7%** — not statistically significant, but leaning
+  negative rather than positive. Reverted rather than spend more time
+  chasing or tuning it; rebuilt from the reverted source, re-verified
+  compliance/self-play clean, confirmed functionally identical to the
+  pre-attempt baseline (the two builds' bytes differ only in embedded PE
+  timestamps from separate `-flto` compiles, as expected). `final/` is back
+  to the protected-passed-pawn build (Hour 17's confirmed win).
+- ~8.6 hours remain. Two eval attempts this stretch: one clear win
+  (protected passed pawn), one wash/mild-negative reverted (connected
+  passers) — a healthy ratio consistent with the session's overall eval
+  hit rate. Given this is now six feature attempts total since the review
+  phase with one more real win found, continuing to alternate briefly is
+  still worthwhile, but starting to lean toward transitioning to the
+  reserved final-verification phase within the next hour or two rather than
+  extending the feature-hunt indefinitely — want a large, unhurried margin
+  for that mandatory final stretch.
