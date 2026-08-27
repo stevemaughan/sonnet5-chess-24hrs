@@ -473,6 +473,14 @@ to be a search bottleneck later.
   trend, then continue at the same measured pace (small idea -> stress test
   -> A/B match -> promote or revert), watching for when returns clearly flatten
   out so remaining time can shift toward tuning/polish/final verification.
+- Re-anchored vs stash-25: 200 games, **17.2%** (up from 13.0% then 15.3% at
+  earlier points this session against the same opponent — a clean,
+  monotonic trend tracking the session's incremental improvements). One
+  "connection stalls" in this batch too, but this time it was **stash25
+  itself (White) that stalled** — Stash's own reliability hiccup, not ours;
+  our engine had zero issues in this batch. Estimate from this bracket:
+  ~2665, consistent with the broader ~2650-2715 picture.
+- ~14.8 hours remain. Continuing at the same measured pace.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
