@@ -852,3 +852,27 @@ to be a search bottleneck later.
   reserved final-verification phase within the next hour or two rather than
   extending the feature-hunt indefinitely — want a large, unhurried margin
   for that mandatory final stretch.
+- Fresh re-anchor vs stash-25 (~2940 CCRL; last measured Hour 11 at 17.2%,
+  well before IIR/extra-LMR-tier/LMP-extension/forced-move-cap/contempt/
+  protected-passed-pawn): **300 games, 19.5% score (58.5/300), Elo -246.3**
+  -> estimate **~2694**. This converges tightly with this hour's stash-21
+  measurement (~2693) — two independent opponents, two different points in
+  the session, landing on almost the same number is a strong consistency
+  signal for the current best estimate. **300/300 clean terminations, zero
+  timeouts/crashes/stalls on either side** (checked explicitly) — the
+  cleanest possible reliability result.
+- ~8.3 hours remain. **Current best estimate: ~2690-2695**, consistent
+  across stash-20/21/25/30/33 brackets throughout the session and now
+  converging tightly at the two most recent, most-improved-build
+  measurements. Decision: this is a good, stable, well-evidenced point to
+  begin the deliberate transition into the reserved final-verification
+  phase — reliability has been perfect for hundreds of consecutive games,
+  the last four eval/search/protocol review passes are all resolved, and
+  further feature-hunting has hit clearly diminishing returns (last several
+  attempts split roughly 50/50 win/wash-or-negative). ~8.3 hours remaining
+  is a very comfortable margin for final verification (identity, static
+  linking, optimisation flags, compliance, a real-time-control sanity
+  match) with plenty of reserve left over — will still watch for any
+  further easy, well-reasoned wins along the way, but the primary mode
+  shifts now to consolidation and verification rather than open-ended
+  experimentation.
