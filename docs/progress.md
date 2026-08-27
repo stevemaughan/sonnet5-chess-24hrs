@@ -904,6 +904,23 @@ to be a search bottleneck later.
   this result, re-anchoring against Stash again is worthwhile before
   settling back into steady-state; will do a couple of confirmatory
   matches next, then reassess the remaining-time plan.
+- Re-anchored vs stash-25 with the post-malus build: 300 games, **18.83%,
+  estimate ~2686** — flat/slightly *below* the pre-malus stash-25
+  measurement from earlier this hour (19.5% -> ~2694), i.e. this single
+  cross-opponent sample did **not** show the +84 Elo jump the internal
+  mirror-match A/B suggested. Not treating this as a red flag or reverting
+  though: the internal result had LOS 100% (very strong, low-noise
+  evidence isolating exactly this one change against an otherwise
+  identical opponent), while a single 300-game cross-engine match carries
+  ~+/-40 Elo noise of its own — the two numbers (~2694 before, ~2686 now)
+  differ by well under one combined standard error, so this is
+  consistent-with-flat, not contradictory. It's also a known, expected
+  pattern that pure move-ordering/search-efficiency gains (deeper
+  effective search per node budget) don't always transfer 1:1 in
+  Elo-against-a-structurally-different-opponent the way they do in a
+  same-architecture mirror match. Zero reliability issues (300/300 clean).
+  Running one more independent cross-check (stash-21) before drawing any
+  conclusion, rather than react to a single noisy sample.
 
 ## Hour 17 — 2026-08-27 07:17
 
