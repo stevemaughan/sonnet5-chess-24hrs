@@ -1156,3 +1156,22 @@ to be a search bottleneck later.
   large share of the late-session gains. ~5.7 hours remain — now
   genuinely committing to the wind-down: final verification confirmation,
   light monitoring, and the true final lock-down well before 16:32.
+- Re-ran the full verification checklist against the current (malus +
+  continuation-history) `final/` build, since the binary changed since the
+  last full pass: static linking (`objdump` shows only system DLLs, and
+  the exe runs correctly with scoop/MinGW/gcc stripped from PATH), perft
+  126/126 fresh rebuild, `fastchess --compliance` 40/40, pathological time
+  controls (`wtime`/`btime`/`movetime` at 0 and negative) each return
+  exactly one `bestmove` promptly, `go infinite`+`quit` returns cleanly
+  3/3, identity/options correct, `final/` contains only the one required
+  file, git status clean. All clean — this build is confirmed safe to
+  leave as the entry at any point from here on.
+- ~5.7 hours remain. Entering a lighter-weight steady-state for a while:
+  periodic check-ins rather than continuous active experimentation, since
+  the search/eval feature-hunt was deliberately concluded on a strong note
+  this hour and further magnitude-tuning attempts have a demonstrated poor
+  hit rate this session. Will still act on any genuinely low-risk,
+  well-reasoned opportunity that surfaces, and will begin the true,
+  unhurried final lock-down (this same checklist run one more time,
+  literally last, plus updating `docs/progress.md`'s final entry) with a
+  comfortable margin before the 16:32 deadline.
