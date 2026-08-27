@@ -280,6 +280,12 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
         }
     }
 
+    // Internal iterative reduction: a non-PV node with no TT move at all
+    // will have noticeably worse move ordering, so shave a ply off rather
+    // than pay full price for it (cheaper than IID's full re-search, used
+    // below only for PV nodes).
+    if (!ttHit && !pvNode && depth >= 4 && !inCheck) depth--;
+
     int staticEval = inCheck ? -INF_SCORE : evaluate(b);
 
     // Reverse futility pruning: if static eval is already comfortably above beta
