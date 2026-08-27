@@ -369,6 +369,18 @@ static int negamax(Board& b, int depth, int alpha, int beta, int ply, bool doNul
             continue;
         }
 
+        // Late move pruning: at shallow depth, once enough quiet moves have
+        // already been tried without improving alpha, further quiets are
+        // very unlikely to matter — skip them outright regardless of eval.
+        static const int LMPThreshold[7] = { 0, 6, 9, 13, 18, 24, 30 };
+        if (!inCheck && !pvNode && isQuiet && !givesCheck && legalCount > 1 &&
+            depth >= 1 && depth <= 6 && alpha > -MATE_IN_MAX &&
+            legalCount > LMPThreshold[depth]) {
+            popHistoryKey();
+            b.unmakeMove(m, u);
+            continue;
+        }
+
         searchStackMove[ply] = m;
 
         if (legalCount == 1) {
