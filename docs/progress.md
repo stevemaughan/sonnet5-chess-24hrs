@@ -921,6 +921,19 @@ to be a search bottleneck later.
   same-architecture mirror match. Zero reliability issues (300/300 clean).
   Running one more independent cross-check (stash-21) before drawing any
   conclusion, rather than react to a single noisy sample.
+- Stash-21 cross-check landed: 300 games, **55.83% score, +40.7 Elo
+  (+/-35.2), LOS 98.9%** -> estimate ~2751, a large jump from the
+  pre-malus stash-21 measurement (~2693). This strongly corroborates the
+  internal A/B's +84 Elo signal — two independent pieces of evidence
+  (mirror-match A/B, and a real-opponent re-measurement showing a ~58
+  point shift on the same opponent) now point the same direction, against
+  the one flat/noisy stash-25 sample. 300/300 clean except 1 timeout on
+  stash21's own side (not ours). Current read: the stash-25 sample is
+  most likely the noisy outlier, not the true signal — running one more
+  batch against stash-25 to build a larger combined sample (600 total
+  post-malus games vs that opponent) before settling the number, since
+  this result meaningfully changes the session's final Elo estimate and
+  is worth the extra ~15 minutes to pin down properly.
 
 ## Hour 17 — 2026-08-27 07:17
 
