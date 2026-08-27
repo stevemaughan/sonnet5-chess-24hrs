@@ -677,3 +677,23 @@ to be a search bottleneck later.
   with a handful of fresh feature attempts now that the codebase has had
   four real bugs shaken out, then transition to the reserved final-build
   phase with good margin.
+
+## Hour 16 — 2026-08-27 06:20
+
+- Added a forced-move depth cap: when exactly one legal move exists at the
+  root (e.g. escaping check with a single flight square) and the search is
+  time-limited (not an explicit "go depth"/"go infinite"), cap the search at
+  depth 6 instead of using the position's full time budget — the move can't
+  change no matter how deep it's searched, so banking that clock time for a
+  position with an actual decision is free value. Unlike the earlier
+  "easy move" heuristic that failed (which guessed at stability), this is
+  unconditionally correct by construction — there's no decision being cut
+  short. Validated: 53.3% over 240 games, zero abnormal terminations.
+  Promoted to `final/`.
+- ~10.2 hours remain. Session running total is now roughly 2350 -> ~2680+
+  Elo with a strong reliability record, including two real correctness/hang
+  fixes found by independent code review. Plan for the remaining time: a
+  little more of the same measured pace (occasional review pass, occasional
+  well-reasoned feature attempt, periodic Stash re-anchoring), then a
+  deliberate transition to final-build verification with a comfortable
+  multi-hour margin before the 24-hour mark.
