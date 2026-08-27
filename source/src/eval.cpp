@@ -245,6 +245,16 @@ static void pieceBonuses(const Board& b, Color us, int& mg, int& eg) {
         mg += (shieldCount - 3) * 10;
     }
 
+    // Open/semi-open files next to our own king are highways for enemy
+    // rooks and queens, independent of whether the immediate shield square
+    // itself is missing a pawn.
+    for (int f = std::max(0, kf - 1); f <= std::min(7, kf + 1); f++) {
+        bool ownOnFile = (ownPawns & fileBB(f)) != 0;
+        bool enemyOnFile = (enemyPawns & fileBB(f)) != 0;
+        if (!ownOnFile && !enemyOnFile) mg -= 20;
+        else if (!ownOnFile) mg -= 10;
+    }
+
     // King attack pressure: weight enemy pieces that bear on the squares
     // around our king; a lone attacker is largely harmless, so the penalty
     // only kicks in once at least two pieces are involved (classic "attack
