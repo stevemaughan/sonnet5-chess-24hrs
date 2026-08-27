@@ -506,6 +506,23 @@ to be a search bottleneck later.
   final-build verification phase in the back half of the remaining time —
   the rules call for reserving real time at the end for that, not
   squeezing it in at the last minute.
+
+## Hour 13 — 2026-08-27 03:09
+
+- Three ideas in a row came back negative: singular extensions (49.2%,
+  reverted — too much complexity for zero gain), connected rooks (47.3%,
+  reverted), and extending RFP/SEE-pruning depth caps the same way the
+  futility/LMP extension had worked (46.9%, reverted — that pattern didn't
+  generalize). All zero reliability impact, just not strength wins.
+  **Clear signal to stop feature-hunting for a while rather than keep
+  spending ~20-30 min per round chasing a thinning vein of ideas.**
+- Decision: shift the next stretch of time to a comprehensive validation
+  pass (fresh Stash-ladder numbers across several rungs, watching
+  reliability closely) rather than more speculative changes, then reassess
+  whether any further ideas seem worth trying versus moving toward the
+  final verification phase. ~13.4 hours remain — plenty of runway either
+  way, so this is a considered pacing choice, not a sign of running out of
+  time.
 - Tried a more principled log-based LMR reduction formula
   (0.5 + ln(depth)*ln(moveCount)/2.25 instead of the ad-hoc step function).
   Result: 48.8% over 240 games (neutral-to-negative) **and** a third
