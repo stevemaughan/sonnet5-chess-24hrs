@@ -41,7 +41,10 @@ void TT::store(uint64_t key, int depth, int score, int eval, int flag, Move move
     if (table.empty()) return;
     TTEntry& e = table[key & mask];
     // Replacement: prefer empty/different-key slots, or same-key with >= depth, or aged-out entries.
-    if (e.key != key || depth >= e.depth || generation != e.age || flag == TT_EXACT) {
+    // (A shallow EXACT result must not unconditionally evict a much deeper
+    // entry at the same slot just because of its flag — depth is a better
+    // proxy for how valuable an entry is to keep.)
+    if (e.key != key || depth >= e.depth || generation != e.age) {
         if (move == NO_MOVE && e.key == key) move = e.move; // keep previous move if none given (e.g. all-node re-store)
         e.key = key;
         e.score = (int16_t)scoreToTT(score, ply);

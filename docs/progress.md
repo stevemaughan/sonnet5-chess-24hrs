@@ -876,3 +876,24 @@ to be a search bottleneck later.
   further easy, well-reasoned wins along the way, but the primary mode
   shifts now to consolidation and verification rather than open-ended
   experimentation.
+- Fixed the specific TT-replacement inefficiency review pass 3 flagged
+  (Hour 15) but left alone at the time: `store()` unconditionally let any
+  `TT_EXACT`-flagged result replace the slot's incumbent regardless of
+  depth, so a shallow exact score could evict a much deeper, far more
+  valuable entry. Removed the unconditional EXACT override, keeping only
+  the depth/generation-based replacement rule (`tt.cpp`). This is a
+  correctness/efficiency fix grounded in specific, already-diagnosed
+  reasoning, not a speculative guess. Validated: compliance 40/40,
+  self-play stress clean, **240-game A/B: 52.92%, +20.3 Elo (+/-27.4),
+  LOS 92.7%**, zero abnormal terminations — a solid positive result
+  matching the theoretical rationale. Promoted to `final/`.
+- ~8.0 hours remain. Session running tally since Hour 15's gauntlet (~2680):
+  forced-move depth cap (win), Move-Overhead label fix (cosmetic), contempt
+  (accepted on reasoning, neutral mirror-match as expected), protected
+  passed pawn (win, +30.5 Elo), connected passers (reverted, mild
+  negative), TT replacement fix (win, +20.3 Elo) — a productive stretch.
+  Current estimate holds at **~2690-2710** (the last two Stash re-anchors
+  at ~2693/~2694 predate only the TT fix, which independently measured
+  positive). Now genuinely beginning the wind-down: one more broad
+  reliability/strength check is reasonable, then committing to final
+  verification with several hours of comfortable reserve.
