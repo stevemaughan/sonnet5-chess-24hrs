@@ -216,7 +216,6 @@ All four engines were rated in the same run, under identical conditions.
   250 Elo of its own level, so the effect on its estimate is small.
 - The rating run used 64 MB hash rather than the 256 MB assumed in the
   benchmark rules, so that all engines compared on equal terms.
-
 - The engine's own estimate above (2720–2730, plausible range 2650–2800)
   agrees with the measured 2702 ±26. Sonnet 5 finished **fourth of the four
   engines** in the series.
